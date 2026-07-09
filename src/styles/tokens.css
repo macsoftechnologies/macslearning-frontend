@@ -1,0 +1,109 @@
+/* ==========================================================================
+   Design Tokens — "Ledger" system
+   An academic, editorial LMS identity: ink navy + warm amber, paper surface,
+   serif display type paired with a clean grotesque for UI/body.
+   ========================================================================== */
+
+:root {
+  /* ---- Color: base ---- */
+  --color-ink-900: #10192E;
+  --color-ink-800: #16223F;
+  --color-ink-700: #1E2E52;
+  --color-ink-600: #2B3D68;
+  --color-ink-500: #3E5288;
+
+  --color-paper-0: #FDFCF9;
+  --color-paper-50: #FAF8F2;
+  --color-paper-100: #F3EFE4;
+  --color-paper-200: #E8E2D2;
+
+  --color-amber-400: #EFB35C;
+  --color-amber-500: #E3A03A;
+  --color-amber-600: #C7822A;
+  --color-amber-050: #FBF0DC;
+
+  --color-slate-900: #1C2029;
+  --color-slate-700: #3A4150;
+  --color-slate-500: #6B7280;
+  --color-slate-400: #97A0AD;
+  --color-slate-200: #E1E4E9;
+  --color-slate-100: #F0F2F5;
+
+  --color-sage-500: #4C7A63;
+  --color-sage-050: #E7F0EA;
+  --color-rose-500: #B4503F;
+  --color-rose-050: #FBEAE6;
+  --color-sky-500: #3E76A6;
+  --color-sky-050: #E8F1F8;
+
+  /* ---- Semantic ---- */
+  --bg-app: var(--color-paper-50);
+  --bg-surface: #FFFFFF;
+  --bg-surface-muted: var(--color-paper-100);
+  --bg-inverse: var(--color-ink-800);
+
+  --text-primary: var(--color-slate-900);
+  --text-secondary: var(--color-slate-500);
+  --text-inverse: var(--color-paper-0);
+  --text-accent: var(--color-amber-600);
+
+  --border-subtle: var(--color-slate-200);
+  --border-strong: var(--color-slate-400);
+
+  --accent: var(--color-amber-500);
+  --accent-hover: var(--color-amber-600);
+  --accent-contrast: var(--color-ink-900);
+
+  --success: var(--color-sage-500);
+  --success-bg: var(--color-sage-050);
+  --danger: var(--color-rose-500);
+  --danger-bg: var(--color-rose-050);
+  --info: var(--color-sky-500);
+  --info-bg: var(--color-sky-050);
+  --warning: var(--color-amber-600);
+  --warning-bg: var(--color-amber-050);
+
+  /* ---- Typography ---- */
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
+  --fs-2xs: 0.6875rem;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 1.875rem;
+  --fs-3xl: 2.375rem;
+
+  /* ---- Spacing ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* ---- Radius / Shadow ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(16, 25, 46, 0.06);
+  --shadow-md: 0 4px 16px rgba(16, 25, 46, 0.08);
+  --shadow-lg: 0 12px 32px rgba(16, 25, 46, 0.14);
+  --shadow-focus: 0 0 0 3px rgba(227, 160, 58, 0.35);
+
+  --sidebar-w: 248px;
+  --topbar-h: 64px;
+
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+}

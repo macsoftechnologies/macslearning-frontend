@@ -1,0 +1,61 @@
+.dtable-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.dtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+.dtable thead th {
+  text-align: left;
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--color-paper-50);
+  white-space: nowrap;
+}
+
+.dtable tbody td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.dtable tbody tr:last-child td { border-bottom: none; }
+.dtable tbody tr:hover td { background: var(--color-paper-50); }
+
+.dtable__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-10) 0;
+  color: var(--text-secondary);
+}
+
+.skeleton-bar {
+  display: block;
+  height: 14px;
+  width: 80%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--color-slate-100) 25%, var(--color-slate-200) 37%, var(--color-slate-100) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shine 1.4s ease infinite;
+}
+
+@keyframes skeleton-shine {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}

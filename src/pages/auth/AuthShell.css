@@ -1,0 +1,125 @@
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.auth-shell__side {
+  background: var(--color-ink-900);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(239,179,92,0.14), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(62,82,136,0.35), transparent 50%);
+  color: #fff;
+  padding: var(--sp-10);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auth-shell__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.auth-shell__mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--color-ink-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-shell__quote-text {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  line-height: 1.4;
+  max-width: 460px;
+  color: rgba(255,255,255,0.92);
+  font-weight: 500;
+}
+
+.auth-shell__stats {
+  display: flex;
+  gap: var(--sp-8);
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-6);
+  border-top: 1px solid rgba(255,255,255,0.14);
+}
+
+.auth-shell__stats strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  color: var(--color-amber-400);
+}
+
+.auth-shell__stats span {
+  font-size: var(--fs-2xs);
+  color: rgba(255,255,255,0.6);
+}
+
+.auth-shell__form-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+  background: var(--bg-app);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-card--wide { max-width: 620px; }
+
+.auth-card__title {
+  font-size: var(--fs-2xl);
+  margin-bottom: 6px;
+}
+
+.auth-card__subtitle {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  margin-bottom: var(--sp-6);
+}
+
+.auth-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.auth-card__footer {
+  margin-top: var(--sp-6);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.auth-card__footer a {
+  color: var(--text-accent);
+  font-weight: 600;
+}
+
+.auth-error-box {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-3);
+  font-size: var(--fs-xs);
+}
+
+.auth-error-box ul { padding-left: 18px; list-style: disc; }
+
+@media (max-width: 880px) {
+  .auth-shell { grid-template-columns: 1fr; }
+  .auth-shell__side { display: none; }
+}

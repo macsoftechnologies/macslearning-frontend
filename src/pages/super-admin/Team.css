@@ -1,0 +1,38 @@
+.super-admin-team .list-controls {
+  margin-bottom: 24px;
+}
+
+.permissions-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.permissions-section {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.permissions-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.permissions-help {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.toggles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+

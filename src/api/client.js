@@ -1,0 +1,91 @@
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../utils/tokenStorage';
+
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+export const STATIC_BASE_URL = import.meta.env.VITE_STATIC_BASE_URL || 'http://localhost:5000';
+
+export const buildStaticUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${STATIC_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
+const client = axios.create({ baseURL: API_BASE_URL });
+
+client.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((p) => (error ? p.reject(error) : p.resolve(token)));
+  failedQueue = [];
+};
+
+client.interceptors.response.use(
+  (res) => res,
+  async (err) => {
+    const original = err.config;
+    const status = err.response?.status;
+
+    if (status === 401 && !original?._retry && getRefreshToken()) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          original.headers.Authorization = `Bearer ${token}`;
+          return client(original);
+        });
+      }
+
+      original._retry = true;
+      isRefreshing = true;
+
+      try {
+        const { data } = await axios.post(
+          `${API_BASE_URL}/auth/refresh-token`,
+          { refreshToken: getRefreshToken() }
+        );
+        const newToken = data.data.accessToken;
+        setTokens({ accessToken: newToken, refreshToken: data.data.refreshToken || getRefreshToken() });
+        processQueue(null, newToken);
+        original.headers.Authorization = `Bearer ${newToken}`;
+        return client(original);
+      } catch (refreshErr) {
+        processQueue(refreshErr, null);
+        clearTokens();
+        if (!window.location.pathname.includes('login')) {
+          window.location.href = '/login';
+        }
+        return Promise.reject(refreshErr);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    if (status === 429) {
+      toast.error('Too many requests. Please wait a moment and try again.');
+    } else if (status >= 500) {
+      toast.error('Something went wrong on our end. Please try again.');
+    }
+
+    return Promise.reject(err);
+  }
+);
+
+// Normalizes API error payloads: { message: string | string[] } → string[]
+export const extractErrorMessages = (err) => {
+  const payload = err?.response?.data;
+  if (!payload) return ['Network error. Please check your connection.'];
+  const msg = payload.message;
+  if (Array.isArray(msg)) return msg;
+  if (typeof msg === 'string') return [msg];
+  return ['An unexpected error occurred.'];
+};
+
+export default client;
