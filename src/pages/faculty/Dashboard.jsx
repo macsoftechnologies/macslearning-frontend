@@ -14,7 +14,7 @@ export default function FacultyDashboard() {
 
   useEffect(() => {
     facultyApi.getDashboardStats()
-      .then((res) => setStats(res.data))
+      .then((res) => setStats(res.data?.data || res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
