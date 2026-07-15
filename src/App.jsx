@@ -73,6 +73,7 @@ import Profile from './pages/shared/Profile';
 import FinanceDashboard from './pages/finance/Dashboard';
 import FinancePayments from './pages/finance/Payments';
 import FinanceReportsOverview from './pages/finance/ReportsOverview';
+import ScrollToTop from './components/ScrollToTop';
 
 function RootRedirect() {
   const { user, role, loading, homeFor } = useAuth();
@@ -84,6 +85,7 @@ function RootRedirect() {
 export default function App() {
   return (
     <BrowserRouter basename="/macslearnfrontend">
+      <ScrollToTop />
       <AuthProvider>
         <Toaster
           position="top-right"
