@@ -8,7 +8,15 @@ export const STATIC_BASE_URL = import.meta.env.VITE_STATIC_BASE_URL || 'http://l
 export const buildStaticUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  return `${STATIC_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+  
+  let normalizedPath = path;
+  if (normalizedPath.startsWith('/uploads')) {
+    normalizedPath = '/public' + normalizedPath;
+  } else if (normalizedPath.startsWith('uploads/')) {
+    normalizedPath = '/public/' + normalizedPath;
+  }
+
+  return `${STATIC_BASE_URL}${normalizedPath.startsWith('/') ? '' : '/'}${normalizedPath}`;
 };
 
 const client = axios.create({ baseURL: API_BASE_URL });

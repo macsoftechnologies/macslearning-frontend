@@ -7,6 +7,7 @@ import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import PageLoader from '../../components/ui/PageLoader';
+import { buildStaticUrl } from '../../api/client';
 
 const DUMMY_DATA = {
   student_name: 'John Doe',
@@ -76,7 +77,7 @@ export default function CertificateTemplates() {
               width: `${A4_WIDTH}px`,
               height: `${A4_HEIGHT}px`,
               backgroundColor: previewTemplate?.backgroundType === 'BLANK' ? '#ffffff' : 'transparent',
-              backgroundImage: previewTemplate?.backgroundType === 'IMAGE' && previewTemplate?.backgroundImageUrl ? `url(${previewTemplate.backgroundImageUrl.startsWith('http') ? previewTemplate.backgroundImageUrl : import.meta.env.VITE_STATIC_BASE_URL + previewTemplate.backgroundImageUrl})` : 'none',
+              backgroundImage: previewTemplate?.backgroundType === 'IMAGE' && previewTemplate?.backgroundImageUrl ? `url(${buildStaticUrl(previewTemplate.backgroundImageUrl)})` : 'none',
               backgroundSize: '100% 100%',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
@@ -114,7 +115,7 @@ export default function CertificateTemplates() {
                     transform: 'translate(-50%, -50%)'
                   }}>
                     <img 
-                      src={f.url.startsWith('http') ? f.url : import.meta.env.VITE_STATIC_BASE_URL + f.url} 
+                      src={buildStaticUrl(f.url)} 
                       alt="embedded" 
                       style={{ 
                         width: `${f.width || 100}px`, 

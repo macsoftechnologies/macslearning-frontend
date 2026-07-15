@@ -43,7 +43,7 @@ export default function Organizations() {
         <div>
           <span className="page-eyebrow">Super admin</span>
           <h1 className="page-title">Organizations</h1>
-          <p className="page-subtitle">Every institution running on Ledger LMS.</p>
+          <p className="page-subtitle">Every institution running on  LMS.</p>
         </div>
         <Button icon={Plus} onClick={() => setModalOpen(true)}>
           Create Organization

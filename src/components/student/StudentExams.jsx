@@ -74,7 +74,7 @@ export default function StudentExams({ courseId }) {
                     </Button>
                   )}
                   {pastAttempts.map((att, idx) => (
-                    <Button key={att._id} size="sm" variant="outline" onClick={() => navigate(`/student/my-courses/${courseId}/exams/${r._id || r.id}/attempts/${att._id}/review`)}>
+                    <Button key={att._id || att.id || idx} size="sm" variant="outline" onClick={() => navigate(`/student/my-courses/${courseId}/exams/${r._id || r.id}/attempts/${att._id || att.id}/review`)}>
                       Review Attempt {idx + 1}
                     </Button>
                   ))}

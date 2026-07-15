@@ -16,6 +16,27 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 const getPlayerUrl = (url) => {
   if (!url) return '';
   let trimmed = url.trim();
+  if (trimmed.toLowerCase().startsWith('<iframe')) {
+    const match = trimmed.match(/src=["'](.*?)["']/);
+    if (match && match[1]) trimmed = match[1];
+  }
+
+  if (trimmed.includes('youtube.com/embed/')) {
+    const videoId = trimmed.split('youtube.com/embed/')[1].split(/[?#]/)[0];
+    trimmed = `https://www.youtube.com/watch?v=${videoId}`;
+  } else if (trimmed.includes('player.vimeo.com/video/')) {
+    const videoId = trimmed.split('player.vimeo.com/video/')[1].split(/[?#]/)[0];
+    trimmed = `https://vimeo.com/${videoId}`;
+  } else if (trimmed.includes('youtube.com/watch')) {
+    try {
+      const videoId = new URL(trimmed.startsWith('http') ? trimmed : 'https://' + trimmed).searchParams.get('v');
+      if (videoId) trimmed = `https://www.youtube.com/watch?v=${videoId}`;
+    } catch (e) { }
+  } else if (trimmed.includes('youtu.be/')) {
+    const videoId = trimmed.split('youtu.be/')[1].split(/[?#]/)[0];
+    trimmed = `https://www.youtube.com/watch?v=${videoId}`;
+  }
+
   if (trimmed.startsWith('www.')) trimmed = 'https://' + trimmed;
   if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be') || trimmed.includes('vimeo.com')) {
     if (!trimmed.startsWith('http')) trimmed = 'https://' + trimmed;
@@ -118,7 +139,7 @@ export default function VideoQuizManager() {
         questionText: form.questionText,
         maxMarks: Number(form.maxMarks),
       };
-      
+
       if (form.type !== 'THEORY') {
         payload.options = form.options.map((t, i) => ({ text: t, isCorrect: i === Number(form.correctAnswerIndex) }));
         payload.correctAnswer = form.options[form.correctAnswerIndex];
@@ -201,15 +222,15 @@ export default function VideoQuizManager() {
 
         {/* Right Side: Sidebar */}
         <div style={{ width: '400px', background: 'var(--color-paper)', borderLeft: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column' }}>
-          
+
           <div style={{ padding: '0 var(--sp-4)', borderBottom: '1px solid var(--border-subtle)' }}>
-            <Tabs 
+            <Tabs
               tabs={[
                 { key: 'quizzes', label: 'Manage Quizzes', icon: FileText },
                 { key: 'responses', label: 'Student Responses', icon: Users }
-              ]} 
-              active={activeTab} 
-              onChange={setActiveTab} 
+              ]}
+              active={activeTab}
+              onChange={setActiveTab}
             />
           </div>
 
@@ -219,7 +240,7 @@ export default function VideoQuizManager() {
                 {showForm ? (
                   <form onSubmit={submitQuiz} className="stack" style={{ padding: 'var(--sp-5)' }}>
                     <h3 style={{ fontSize: 'var(--fs-lg)', marginBottom: 'var(--sp-2)' }}>Add Quiz at {formatTime(form.timestampSeconds)}</h3>
-                    
+
                     <Field label="Question Type" required>
                       <Select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
                         <option value="MCQ">Multiple Choice</option>
@@ -231,11 +252,11 @@ export default function VideoQuizManager() {
                     <Field label="Question" required>
                       <Textarea value={form.questionText} onChange={e => setForm(f => ({ ...f, questionText: e.target.value }))} required />
                     </Field>
-                    
+
                     <Field label="Max Marks">
                       <Input type="number" value={form.maxMarks} onChange={e => setForm(f => ({ ...f, maxMarks: e.target.value }))} required />
                     </Field>
-                    
+
                     {form.type !== 'THEORY' && (
                       <>
                         <p style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>Options</p>
@@ -257,7 +278,7 @@ export default function VideoQuizManager() {
                         )}
                       </>
                     )}
-                    
+
                     <div className="row" style={{ marginTop: 'var(--sp-6)', gap: 'var(--sp-4)' }}>
                       <Button type="button" variant="outline" onClick={() => setShowForm(false)} style={{ flex: 1 }}>Cancel</Button>
                       <Button type="submit" loading={saving} style={{ flex: 1 }}>Save</Button>
@@ -267,7 +288,7 @@ export default function VideoQuizManager() {
                   <div style={{ padding: 'var(--sp-5)' }}>
                     <h3 style={{ fontSize: 'var(--fs-lg)', marginBottom: 'var(--sp-4)' }}>Quizzes ({quizzes.length})</h3>
                     {quizzes.length === 0 && <p className="text-muted" style={{ fontSize: 'var(--fs-sm)' }}>No quizzes added yet. Pause the video and click 'Add Quiz' to insert one.</p>}
-                    
+
                     <div className="stack" style={{ gap: 'var(--sp-4)' }}>
                       {quizzes.map((q) => (
                         <div key={q._id || q.id} style={{ padding: 'var(--sp-4)', background: 'var(--color-paper-50)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
@@ -294,7 +315,7 @@ export default function VideoQuizManager() {
               <div style={{ padding: 'var(--sp-5)' }}>
                 <h3 style={{ fontSize: 'var(--fs-lg)', marginBottom: 'var(--sp-4)' }}>Student Answers</h3>
                 {answers.length === 0 && <p className="text-muted" style={{ fontSize: 'var(--fs-sm)' }}>No answers submitted yet.</p>}
-                
+
                 <div className="stack" style={{ gap: 'var(--sp-4)' }}>
                   {answers.map(ans => (
                     <div key={ans._id || ans.id} style={{ padding: 'var(--sp-4)', background: 'var(--color-paper-50)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
@@ -309,7 +330,7 @@ export default function VideoQuizManager() {
                         )}
                       </div>
                       <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-text-light)', marginBottom: 'var(--sp-2)' }}>Q: {ans.quizId?.questionText}</p>
-                      
+
                       <div style={{ background: '#fff', padding: 'var(--sp-3)', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: 'var(--fs-sm)', marginBottom: 'var(--sp-3)' }}>
                         <span style={{ fontWeight: 600 }}>Answer:</span> {ans.selectedOption || ans.textAnswer}
                       </div>

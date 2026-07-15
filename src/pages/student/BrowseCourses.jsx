@@ -76,7 +76,7 @@ export default function BrowseCourses() {
                 <h3>{c.title}</h3>
                 <p className="text-muted" style={{ fontSize: 'var(--fs-xs)' }}>{c.category?.name || 'General'}</p>
                 <div className="course-card__meta">
-                  <span>{c.faculty?.fullName || 'Ledger LMS'}</span>
+                  <span>{c.faculty?.fullName || ' LMS'}</span>
                   <span className="course-card__price">
                     {(() => {
                       if (!c.pricing?.isPaid) return 'Free';

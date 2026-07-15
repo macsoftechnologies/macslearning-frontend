@@ -55,7 +55,7 @@ export default function SuperAdminDashboard() {
         <div>
           <span className="page-eyebrow">Overview</span>
           <h1 className="page-title">Platform Dashboard</h1>
-          <p className="page-subtitle">A bird's-eye view of every organization on Ledger LMS.</p>
+          <p className="page-subtitle">A bird's-eye view of every organization on  LMS.</p>
         </div>
       </div>
 

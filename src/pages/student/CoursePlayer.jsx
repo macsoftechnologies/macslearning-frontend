@@ -22,6 +22,27 @@ import './CoursePlayer.css';
 const getPlayerUrl = (url) => {
   if (!url) return '';
   let trimmed = url.trim();
+  if (trimmed.toLowerCase().startsWith('<iframe')) {
+    const match = trimmed.match(/src=["'](.*?)["']/);
+    if (match && match[1]) trimmed = match[1];
+  }
+  
+  if (trimmed.includes('youtube.com/embed/')) {
+    const videoId = trimmed.split('youtube.com/embed/')[1].split(/[?#]/)[0];
+    trimmed = `https://www.youtube.com/watch?v=${videoId}`;
+  } else if (trimmed.includes('player.vimeo.com/video/')) {
+    const videoId = trimmed.split('player.vimeo.com/video/')[1].split(/[?#]/)[0];
+    trimmed = `https://vimeo.com/${videoId}`;
+  } else if (trimmed.includes('youtube.com/watch')) {
+    try {
+      const videoId = new URL(trimmed.startsWith('http') ? trimmed : 'https://' + trimmed).searchParams.get('v');
+      if (videoId) trimmed = `https://www.youtube.com/watch?v=${videoId}`;
+    } catch (e) {}
+  } else if (trimmed.includes('youtu.be/')) {
+    const videoId = trimmed.split('youtu.be/')[1].split(/[?#]/)[0];
+    trimmed = `https://www.youtube.com/watch?v=${videoId}`;
+  }
+
   if (trimmed.startsWith('www.')) trimmed = 'https://' + trimmed;
   if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be') || trimmed.includes('vimeo.com')) {
     if (!trimmed.startsWith('http')) trimmed = 'https://' + trimmed;

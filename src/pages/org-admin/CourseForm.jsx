@@ -42,13 +42,11 @@ export default function CourseForm() {
 
   useEffect(() => {
     categoriesApi.list().then((res) => setCategories(res.data?.data || [])).catch(() => {});
-    // Only org admins need the faculty dropdown — for faculty, auto-assign themselves
-    if (!isFaculty) {
-      usersApi.list({ userType: 'FACULTY', limit: 100 }).then((res) => {
-        const all = res.data?.data || [];
-        setFaculty(all.filter((u) => u.userType === 'FACULTY'));
-      }).catch(() => {});
-    } else {
+    usersApi.list({ userType: 'FACULTY', limit: 100 }).then((res) => {
+      const all = res.data?.data || [];
+      setFaculty(all.filter((u) => u.userType === 'FACULTY'));
+    }).catch(() => {});
+    if (isFaculty) {
       const myId = user?._id || user?.id;
       if (myId) setForm((f) => ({ ...f, instructorIds: [myId] }));
     }
@@ -58,9 +56,17 @@ export default function CourseForm() {
     if (isEdit) {
       coursesApi.getById(id).then((res) => {
         const data = res.data?.data || {};
+        const instructorEntities = data.instructorIds?.length
+          ? data.instructorIds
+          : data.instructor
+            ? [data.instructor]
+            : data.faculty
+              ? [data.faculty]
+              : [];
         setForm({ 
           ...initial, 
           ...data,
+          instructorIds: instructorEntities.map((i) => i?._id || i?.id || i),
           isPaid: data.pricing?.isPaid || false,
           price: data.pricing?.amount || '',
           regionalPrices: data.regionalPrices?.map(rp => ({
@@ -144,8 +150,8 @@ export default function CourseForm() {
                 {categories.map((c) => <option key={c._id || c.id} value={c._id || c.id}>{c.name}</option>)}
               </Select>
             </Field>
-            {/* Only org admin sees faculty picker; faculty is auto-assigned (handled on backend/frontend) */}
-            {!isFaculty && (
+            {/* Co-instructors available for both org admin and faculty */}
+            {true && (
               <Field label="Co-Instructors">
                 <Select
                   multiple

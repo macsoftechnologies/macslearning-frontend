@@ -12,7 +12,7 @@ export default function FinancePayments() {
       <div className="page-head">
         <div>
           <span className="page-eyebrow">Finance</span>
-          <h1 className="page-title">Payments Ledger</h1>
+          <h1 className="page-title">Payments </h1>
           <p className="page-subtitle">Read-only view of all transactions across your organization.</p>
         </div>
       </div>

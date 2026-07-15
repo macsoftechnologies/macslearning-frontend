@@ -9,7 +9,7 @@ export default function AuthShell({ eyebrow, title, subtitle, children, wide, fo
           <span className="auth-shell__mark">
             <BookMarked size={20} />
           </span>
-          <span>Ledger LMS</span>
+          <span> LMS</span>
         </div>
         <div className="auth-shell__quote">
           <p className="auth-shell__quote-text">

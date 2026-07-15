@@ -413,7 +413,7 @@ function AssignmentsTab({ courseId, base }) {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', dueDate: '', maxScore: 100 });
+  const [form, setForm] = useState({ title: '', description: '', dueDate: '', totalMarks: 100 });
   const [saving, setSaving] = useState(false);
 
   const load = () => {
@@ -426,10 +426,10 @@ function AssignmentsTab({ courseId, base }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await assignmentsApi.create(courseId, { ...form, maxScore: Number(form.maxScore) });
+      await assignmentsApi.create(courseId, { ...form, totalMarks: Number(form.totalMarks) });
       toast.success('Assignment created');
       setModalOpen(false);
-      setForm({ title: '', description: '', dueDate: '', maxScore: 100 });
+      setForm({ title: '', description: '', dueDate: '', totalMarks: 100 });
       load();
     } catch (err) {
       extractErrorMessages(err).forEach((m) => toast.error(m));
@@ -449,7 +449,7 @@ function AssignmentsTab({ courseId, base }) {
         columns={[
           { key: 'title', header: 'Title' },
           { key: 'dueDate', header: 'Due Date', render: (r) => (r.dueDate ? new Date(r.dueDate).toLocaleDateString() : '—') },
-          { key: 'maxScore', header: 'Max Score' },
+          { key: 'totalMarks', header: 'Max Score', render: (r) => r.totalMarks },
           { key: 'submissionsCount', header: 'Submissions', render: (r) => r.submissionsCount ?? 0 },
           {
             key: 'actions', header: 'Actions', render: (r) => (
@@ -467,7 +467,7 @@ function AssignmentsTab({ courseId, base }) {
           <Field label="Description"><Textarea rows={4} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} /></Field>
           <div className="form-grid">
             <Field label="Due Date"><Input type="date" value={form.dueDate} onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))} /></Field>
-            <Field label="Max Score"><Input type="number" value={form.maxScore} onChange={(e) => setForm((f) => ({ ...f, maxScore: e.target.value }))} /></Field>
+            <Field label="Max Score"><Input type="number" value={form.totalMarks} onChange={(e) => setForm((f) => ({ ...f, totalMarks: e.target.value }))} /></Field>
           </div>
         </form>
         <div className="modal-panel__foot" style={{ margin: '16px -24px -24px', padding: '16px 24px' }}>

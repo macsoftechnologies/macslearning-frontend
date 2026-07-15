@@ -1,4 +1,4 @@
-# Ledger LMS — Frontend
+#  LMS — Frontend
 
 A complete, multi-role Learning Management System frontend built with **Vite + React** and **plain CSS** (no Tailwind, no UI kit) — matching your `LMS_Frontend_Implementation_Plan.md` and the Postman collection's API surface.
 
@@ -10,7 +10,7 @@ A complete, multi-role Learning Management System frontend built with **Vite + R
 - **Faculty portal**: dashboard, my courses, course hub (content builder: modules/lessons, assignments, exams, enrolled students).
 - **Student portal**: dashboard, browse/enroll in courses, my courses, a full course player (video/PDF/text lessons, progress tracking, mark-complete), results, certificates, payments.
 - **Shared**: notifications (bell dropdown + full page), profile + change password.
-- A small design system (`src/styles/tokens.css`) — ink-navy / warm-amber "Ledger" identity, Fraunces + Inter type — plus a reusable component library (Button, Input, DataTable, Modal, Tabs, Pagination, StatusBadge, FileUploader, etc.) all in plain CSS.
+- A small design system (`src/styles/tokens.css`) — ink-navy / warm-amber "" identity, Fraunces + Inter type — plus a reusable component library (Button, Input, DataTable, Modal, Tabs, Pagination, StatusBadge, FileUploader, etc.) all in plain CSS.
 
 ## Setup
 

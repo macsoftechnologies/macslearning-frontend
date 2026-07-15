@@ -11,6 +11,7 @@ import { extractErrorMessages, buildStaticUrl } from '../../api/client';
 import Button from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import PageLoader from '../../components/ui/PageLoader';
+import Modal from '../../components/ui/Modal';
 
 export default function CourseOverview() {
   const { id } = useParams();
@@ -21,6 +22,7 @@ export default function CourseOverview() {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     Promise.allSettled([
@@ -48,14 +50,27 @@ export default function CourseOverview() {
     setEnrolling(true);
     try {
       await enrollmentsApi.studentEnroll(id);
-      toast.success('Enrolled successfully!');
-      navigate(`/student/my-courses/${id}/learn`);
+      toast.success('Enrollment successful!');
+      setIsEnrolled(true);
+      setShowPaymentModal(false);
     } catch (err) {
       extractErrorMessages(err).forEach((m) => toast.error(m));
     } finally {
       setEnrolling(false);
     }
   };
+
+  const displayPrice = (() => {
+    if (!course?.pricing?.isPaid) return 'Free';
+    let p = course.pricing.amount;
+    if (user?.regionId && course.regionalPrices?.length > 0) {
+      const rp = course.regionalPrices.find(
+        (rp) => rp.regionId?._id === user.regionId || rp.regionId === user.regionId
+      );
+      if (rp) p = rp.price;
+    }
+    return p;
+  })();
 
   if (loading) return <PageLoader />;
   if (!course) return <div className="page"><p>Course not found.</p></div>;
@@ -73,7 +88,7 @@ export default function CourseOverview() {
           <p className="text-muted" style={{ marginBottom: 'var(--sp-5)', lineHeight: 1.6 }}>{course.description || 'No description provided.'}</p>
 
           <div className="row" style={{ gap: 'var(--sp-6)', marginBottom: 'var(--sp-8)', flexWrap: 'wrap' }}>
-            <span className="row text-muted" style={{ fontSize: 'var(--fs-sm)' }}><User size={15} /> {course.faculty?.fullName || 'Ledger LMS'}</span>
+            <span className="row text-muted" style={{ fontSize: 'var(--fs-sm)' }}><User size={15} /> {course.faculty?.fullName || ' LMS'}</span>
             <span className="row text-muted" style={{ fontSize: 'var(--fs-sm)' }}><Clock size={15} /> {course.durationWeeks ? `${course.durationWeeks} weeks` : 'Self-paced'}</span>
             <span className="row text-muted" style={{ fontSize: 'var(--fs-sm)' }}><BarChart2 size={15} /> {course.level || 'All levels'}</span>
           </div>
@@ -102,22 +117,18 @@ export default function CourseOverview() {
             </div>
             <div style={{ padding: 'var(--sp-5)' }}>
               <p style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-2xl)', margin: '0 0 var(--sp-4) 0' }}>
-                {(() => {
-                  if (!course.pricing?.isPaid) return 'Free';
-                  let displayPrice = course.pricing.amount;
-                  if (user?.regionId && course.regionalPrices?.length > 0) {
-                    const rp = course.regionalPrices.find(
-                      (p) => p.regionId?._id === user.regionId || p.regionId === user.regionId
-                    );
-                    if (rp) displayPrice = rp.price;
-                  }
-                  return `$${displayPrice}`;
-                })()}
+                {displayPrice === 'Free' ? 'Free' : `$${displayPrice}`}
               </p>
               {isEnrolled ? (
                 <Button full size="lg" onClick={() => navigate(`/student/my-courses/${id}/learn`)}>Go to Course</Button>
               ) : (
-                <Button full size="lg" onClick={enroll} loading={enrolling}>
+                <Button full size="lg" onClick={() => {
+                  if (course.pricing?.isPaid) {
+                    setShowPaymentModal(true);
+                  } else {
+                    enroll();
+                  }
+                }} loading={enrolling}>
                   {course.pricing?.isPaid ? 'Buy now' : 'Enroll Now'}
                 </Button>
               )}
@@ -125,6 +136,26 @@ export default function CourseOverview() {
           </Card>
         </div>
       </div>
+
+      <Modal open={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Confirm Purchase">
+        <div className="stack">
+          <p>You are about to purchase the course <strong>{course.title}</strong>.</p>
+          <div style={{ background: 'var(--color-paper-50)', padding: 'var(--sp-4)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+            <div className="row" style={{ justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span>Course Price:</span>
+              <strong>${displayPrice}</strong>
+            </div>
+            <div className="row" style={{ justifyContent: 'space-between' }}>
+              <span>Total:</span>
+              <strong style={{ color: 'var(--color-primary-600)', fontSize: '18px' }}>${displayPrice}</strong>
+            </div>
+          </div>
+          <div className="row" style={{ justifyContent: 'flex-end', gap: 'var(--sp-3)', marginTop: 'var(--sp-2)' }}>
+            <Button variant="outline" onClick={() => setShowPaymentModal(false)}>Close</Button>
+            <Button loading={enrolling} onClick={enroll}>Confirm & Buy Now</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

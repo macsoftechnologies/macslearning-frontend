@@ -93,7 +93,7 @@ export default function StudentAssignments({ courseId }) {
         columns={[
           { key: 'title', header: 'Title' },
           { key: 'dueDate', header: 'Due Date', render: (r) => r.dueDate ? new Date(r.dueDate).toLocaleDateString() : '—' },
-          { key: 'maxScore', header: 'Max Score', render: (r) => r.maxScore },
+          { key: 'totalMarks', header: 'Max Score', render: (r) => r.totalMarks },
           { key: 'status', header: 'Status', render: (r) => {
             const sub = submissions[r._id || r.id];
             if (!sub) return <StatusBadge status="PENDING" />;
@@ -102,7 +102,7 @@ export default function StudentAssignments({ courseId }) {
           }},
           { key: 'score', header: 'Score', render: (r) => {
             const sub = submissions[r._id || r.id];
-            return sub?.score !== undefined ? `${sub.score} / ${r.maxScore}` : '—';
+            return sub?.score !== undefined ? `${sub.score} / ${r.totalMarks}` : '—';
           }},
           {
             key: 'actions', header: 'Actions', render: (r) => {

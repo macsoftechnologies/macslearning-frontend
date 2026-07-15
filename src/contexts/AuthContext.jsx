@@ -115,7 +115,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('orgSlug');
     setUser(null);
     setRole(null);
-    window.location.href = logoutUrl;
+    // window.location.href = logoutUrl;
+    window.location.href = `/macslearnfrontend${logoutUrl}`;
   };
 
   const updateUser = (patch) => setUser((prev) => ({ ...prev, ...patch }));

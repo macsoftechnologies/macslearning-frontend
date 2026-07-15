@@ -7,6 +7,7 @@ import Button from '../../components/ui/Button';
 import Input, { Field, Select } from '../../components/ui/Input';
 import FileUploader from '../../components/ui/FileUploader';
 import PageLoader from '../../components/ui/PageLoader';
+import { buildStaticUrl } from '../../api/client';
 
 const DUMMY_DATA = {
   student_name: 'John Doe',
@@ -100,7 +101,7 @@ function DraggableElement({ field, index, onUpdate, onRemove, scale = 1, onSelec
     return (
       <div style={style} onMouseDown={handleMouseDown}>
         <img 
-          src={field.url.startsWith('http') ? field.url : import.meta.env.VITE_STATIC_BASE_URL + field.url} 
+          src={buildStaticUrl(field.url)} 
           alt="embedded" 
           style={{ 
             width: `${field.width || 100}px`, 
@@ -388,7 +389,7 @@ export default function CertificateTemplateBuilder() {
               width: `${A4_WIDTH}px`,
               height: `${A4_HEIGHT}px`,
               backgroundColor: bgType === 'BLANK' ? '#ffffff' : 'transparent',
-              backgroundImage: bgType === 'IMAGE' && bgUrl ? `url(${bgUrl.startsWith('http') ? bgUrl : import.meta.env.VITE_STATIC_BASE_URL + bgUrl})` : 'none',
+              backgroundImage: bgType === 'IMAGE' && bgUrl ? `url(${buildStaticUrl(bgUrl)})` : 'none',
               backgroundSize: '100% 100%',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',

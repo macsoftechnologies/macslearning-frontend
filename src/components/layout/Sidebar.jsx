@@ -21,7 +21,7 @@ export default function Sidebar({ role, user, open, onNavigate }) {
 
   const brandName = role === 'SUPER_ADMIN' 
     ? 'MacsLearn' 
-    : (user?.organizationName || user?.organizationId?.name || 'Ledger LMS');
+    : (user?.organizationName || user?.organizationId?.name || ' LMS');
 
   return (
     <aside className={`sidebar ${open ? 'sidebar--open' : ''}`}>
@@ -50,7 +50,7 @@ export default function Sidebar({ role, user, open, onNavigate }) {
       </nav>
 
       <div className="sidebar__footer">
-        <p>Ledger LMS v1.0</p>
+        <p> LMS v1.0</p>
       </div>
     </aside>
   );

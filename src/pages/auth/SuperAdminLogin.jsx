@@ -53,7 +53,7 @@ export default function SuperAdminLogin() {
           </div>
         )}
         <Field label="Email" required>
-          <Input type="email" placeholder="admin@ledgerlms.com" value={form.email} onChange={update('email')} required />
+          <Input type="email" placeholder="admin@lms.com" value={form.email} onChange={update('email')} required />
         </Field>
         <Field label="Password" required>
           <Input type="password" placeholder="••••••••" value={form.password} onChange={update('password')} required />
