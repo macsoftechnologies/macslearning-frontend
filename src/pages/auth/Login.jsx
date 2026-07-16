@@ -41,7 +41,7 @@ export default function Login() {
       footer={
         <>
           New student?{' '}
-          <Link to="/register">Register here</Link>
+          <Link to={slug ? `/${slug}/register` : '/register'}>Register here</Link>
           <br />
           {/* <span style={{ display: 'inline-block', marginTop: 10 }}>
             Super Admin? <Link to="/super-admin/login">Sign in here</Link>
