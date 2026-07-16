@@ -22,8 +22,8 @@ export default function Faculty() {
   const debouncedSearch = useDebounce(search);
   const { items, page, setPage, meta, loading, refresh } = usePagination(listFaculty, { search: debouncedSearch });
 
-  // Backend may return all user types – filter to only FACULTY and ORG_USER
-  const filteredItems = items.filter((u) => u.userType === 'FACULTY' || u.userType === 'ORG_USER');
+  // The backend now filters by userType so we don't need to filter on the frontend.
+  const filteredItems = items;
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ fullName: '', email: '', password: '', mobile: '' });
   const [saving, setSaving] = useState(false);

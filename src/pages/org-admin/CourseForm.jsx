@@ -152,7 +152,7 @@ export default function CourseForm() {
             </Field>
             {/* Co-instructors available for both org admin and faculty */}
             {true && (
-              <Field label="Co-Instructors">
+              <Field label="Course Instructors">
                 <Select
                   multiple
                   value={form.instructorIds}

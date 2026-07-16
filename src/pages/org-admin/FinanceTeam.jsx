@@ -22,8 +22,8 @@ export default function FinanceTeam() {
   const debouncedSearch = useDebounce(search);
   const { items, page, setPage, meta, loading, refresh } = usePagination(listFinance, { search: debouncedSearch });
 
-  // Filter out any accidentally returned users that aren't FINANCE
-  const filteredItems = items.filter((u) => u.userType === 'FINANCE');
+  // The backend now filters by userType so we don't need to filter on the frontend.
+  const filteredItems = items;
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ fullName: '', email: '', password: '', mobile: '' });
   const [saving, setSaving] = useState(false);
