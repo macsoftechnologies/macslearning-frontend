@@ -52,7 +52,7 @@ export default function Register() {
             Your account has been created and is pending approval from your organization's admin. You'll be able to sign in
             once approved.
           </p>
-          <Button full onClick={() => navigate('/login')}>
+          <Button full onClick={() => navigate(slug ? `/${slug}/login` : '/login')}>
             Go to Sign In
           </Button>
         </div>
@@ -67,7 +67,7 @@ export default function Register() {
       subtitle="Join your organization's learning portal."
       footer={
         <>
-          Already have an account? <Link to="/login">Sign in</Link>
+          Already have an account? <Link to={slug ? `/${slug}/login` : '/login'}>Sign in</Link>
         </>
       }
     >
