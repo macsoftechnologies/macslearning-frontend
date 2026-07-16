@@ -127,9 +127,11 @@ export default function ExamBuilder() {
         </div>
         <div className="row" style={{ gap: '8px' }}>
           {!(exam.isPublished || exam.status === 'PUBLISHED') && (
-            <Button variant="outline" icon={CheckCircle2} onClick={publishExam}>Publish Exam</Button>
+            <>
+              <Button variant="outline" icon={CheckCircle2} onClick={publishExam}>Publish Exam</Button>
+              <Button icon={Plus} onClick={openCreate}>Add Question</Button>
+            </>
           )}
-          <Button icon={Plus} onClick={openCreate}>Add Question</Button>
         </div>
       </div>
 
@@ -145,7 +147,9 @@ export default function ExamBuilder() {
               key: 'actions', header: 'Actions', render: (r) => (
                 <div className="row" style={{ gap: 6 }}>
                   <Button size="sm" variant="ghost" icon={Pencil} onClick={() => openEdit(r)}>Edit</Button>
-                  <Button size="sm" variant="outline" icon={Trash2} onClick={() => setDeleteTarget(r)}>Delete</Button>
+                  {!(exam.isPublished || exam.status === 'PUBLISHED') && (
+                    <Button size="sm" variant="outline" icon={Trash2} onClick={() => setDeleteTarget(r)}>Delete</Button>
+                  )}
                 </div>
               ),
             },
@@ -215,7 +219,7 @@ export default function ExamBuilder() {
                 )}
               </Field>
             )}
-            <Field label="Marks" required><Input type="number" min={1} value={form.marks} onChange={(e) => setForm((f) => ({ ...f, marks: e.target.value }))} required /></Field>
+            <Field label="Marks" required><Input type="number" min={1} value={form.marks} onChange={(e) => setForm((f) => ({ ...f, marks: e.target.value }))} required disabled={exam.isPublished || exam.status === 'PUBLISHED'} /></Field>
           </div>
         </form>
         <div className="modal-panel__foot" style={{ margin: '16px -24px -24px', padding: '16px 24px' }}>

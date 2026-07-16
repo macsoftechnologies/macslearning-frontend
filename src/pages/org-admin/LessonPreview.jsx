@@ -1,7 +1,10 @@
+import { useState, useEffect } from 'react';
 import { useLocation, Link, useParams } from 'react-router-dom';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { buildStaticUrl } from '../../api/client';
 import Button from '../../components/ui/Button';
+import Modal from '../../components/ui/Modal';
+
 const getVideoEmbedUrl = (url) => {
   if (!url) return null;
   try {
@@ -19,14 +22,20 @@ const getVideoEmbedUrl = (url) => {
   return { type: 'video', src: buildStaticUrl(url) };
 };
 
+const isDocument = (url) => {
+  const ext = url.split('.').pop().toLowerCase();
+  return ['pdf', 'doc', 'docx', 'ppt', 'pptx'].includes(ext);
+};
+
 export default function LessonPreview() {
-  const { pathname } = useLocation();
+  const { pathname } = useParams();
   const { id } = useParams();
   const location = useLocation();
+  const [previewContentUrl, setPreviewContentUrl] = useState(null);
   
   // Use state if we navigated from CourseDetail, otherwise would need to fetch (skipped for now)
   const lesson = location.state?.lesson;
-  const base = pathname.startsWith('/faculty') ? '/faculty' : '/admin';
+  const base = pathname?.startsWith('/faculty') ? '/faculty' : '/admin';
 
   if (!lesson) {
     return (
@@ -83,9 +92,12 @@ export default function LessonPreview() {
             <div style={{ flex: 1 }}>
               <p style={{ fontWeight: 500, fontSize: 'var(--fs-sm)' }}>Supplemental Document</p>
             </div>
-            <a href={buildStaticUrl(lesson.contentUrl)} target="_blank" rel="noreferrer">
-              <Button variant="outline" size="sm">Download / View</Button>
-            </a>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Button variant="outline" size="sm" onClick={() => setPreviewContentUrl(lesson.contentUrl)}>View</Button>
+              <a href={buildStaticUrl(lesson.contentUrl)} download rel="noreferrer">
+                <Button variant="ghost" size="sm">Download</Button>
+              </a>
+            </div>
           </div>
         ) : (
           <div style={{ padding: 'var(--sp-4)', background: 'var(--color-paper-50)', borderRadius: '8px', border: '1px dashed var(--border-subtle)', textAlign: 'center', color: 'var(--color-text-light)', fontSize: 'var(--fs-sm)' }}>
@@ -93,6 +105,20 @@ export default function LessonPreview() {
           </div>
         )}
       </div>
+      <Modal open={!!previewContentUrl} onClose={() => setPreviewContentUrl(null)} title="View Attachment" width={800}>
+        <div style={{ height: '70vh', width: '100%' }}>
+          {previewContentUrl && (
+            <iframe
+              src={isDocument(previewContentUrl) ? (
+                previewContentUrl.toLowerCase().endsWith('.pdf') ? buildStaticUrl(previewContentUrl) :
+                (buildStaticUrl(previewContentUrl).includes('localhost') ? buildStaticUrl(previewContentUrl) : `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(buildStaticUrl(previewContentUrl))}`)
+              ) : buildStaticUrl(previewContentUrl)}
+              title="Attachment Preview"
+              style={{ width: '100%', height: '100%', border: 'none' }}
+            />
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

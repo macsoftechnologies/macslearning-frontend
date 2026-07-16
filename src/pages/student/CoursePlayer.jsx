@@ -11,6 +11,7 @@ import client, { extractErrorMessages, buildStaticUrl } from '../../api/client';
 import Button from '../../components/ui/Button';
 import PageLoader from '../../components/ui/PageLoader';
 import Tabs from '../../components/ui/Tabs';
+import Modal from '../../components/ui/Modal';
 import StudentExams from '../../components/student/StudentExams';
 import StudentAssignments from '../../components/student/StudentAssignments';
 import StudentDiscussions from '../../components/student/StudentDiscussions';
@@ -71,6 +72,7 @@ export default function CoursePlayer() {
   const [course, setCourse] = useState(null);
   const [certificateStatus, setCertificateStatus] = useState(null);
   const [requestingCert, setRequestingCert] = useState(false);
+  const [previewContentUrl, setPreviewContentUrl] = useState(null);
   const [finalExam, setFinalExam] = useState(null);
   
   const lastSavedTimeRef = useRef(0);
@@ -417,8 +419,17 @@ export default function CoursePlayer() {
             )}
 
             {activeLesson.type === 'DOCUMENT' && activeLesson.documentUrl && (
-              <div style={{ marginBottom: 'var(--sp-6)', borderRadius: '8px', overflow: 'hidden' }}>
-                <iframe title="lesson-doc" src={buildStaticUrl(activeLesson.documentUrl)} className="player__pdf" />
+              <div style={{ marginBottom: 'var(--sp-6)', borderRadius: '8px', overflow: 'hidden', height: '75vh', border: '1px solid var(--border-subtle)' }}>
+                <iframe 
+                  title="lesson-doc" 
+                  src={
+                    activeLesson.documentUrl.toLowerCase().endsWith('.pdf') || activeLesson.documentUrl.match(/\.(jpe?g|png|gif|svg)$/i)
+                      ? buildStaticUrl(activeLesson.documentUrl)
+                      : `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(buildStaticUrl(activeLesson.documentUrl))}`
+                  } 
+                  className="player__pdf" 
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                />
               </div>
             )}
 
@@ -434,9 +445,12 @@ export default function CoursePlayer() {
                   <div style={{ flex: 1 }}>
                     <p style={{ fontWeight: 500, fontSize: 'var(--fs-sm)' }}>Supplemental Document</p>
                   </div>
-                  <a href={buildStaticUrl(activeLesson.contentUrl)} target="_blank" rel="noreferrer">
-                    <Button variant="outline" size="sm">Download / View</Button>
-                  </a>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Button variant="outline" size="sm" onClick={() => setPreviewContentUrl(activeLesson.contentUrl)}>View</Button>
+                    <a href={buildStaticUrl(activeLesson.contentUrl)} download rel="noreferrer">
+                      <Button variant="ghost" size="sm">Download</Button>
+                    </a>
+                  </div>
                 </div>
               ) : (
                 <div style={{ padding: 'var(--sp-4)', background: 'var(--color-paper-50)', borderRadius: '8px', border: '1px dashed var(--border-subtle)', textAlign: 'center', color: 'var(--color-text-light)', fontSize: 'var(--fs-sm)' }}>
@@ -485,10 +499,25 @@ export default function CoursePlayer() {
       </div>
       
       <CourseDiscussionSidebar 
-        isOpen={discussionSidebarOpen} 
+        open={discussionSidebarOpen} 
         onClose={() => setDiscussionSidebarOpen(false)} 
         courseId={courseId} 
       />
+
+      <Modal open={!!previewContentUrl} onClose={() => setPreviewContentUrl(null)} title="View Attachment" width={800}>
+        <div style={{ height: '70vh', width: '100%' }}>
+          {previewContentUrl && (
+            <iframe
+              src={isDocument(previewContentUrl) ? (
+                previewContentUrl.toLowerCase().endsWith('.pdf') ? buildStaticUrl(previewContentUrl) :
+                (buildStaticUrl(previewContentUrl).includes('localhost') ? buildStaticUrl(previewContentUrl) : `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(buildStaticUrl(previewContentUrl))}`)
+              ) : buildStaticUrl(previewContentUrl)}
+              title="Attachment Preview"
+              style={{ width: '100%', height: '100%', border: 'none' }}
+            />
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }
