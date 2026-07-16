@@ -35,6 +35,7 @@ export default function Login() {
 
   return (
     <AuthShell
+      slug={slug}
       eyebrow="Sign in"
       title="Welcome back"
       subtitle="Enter your organization credentials to continue."

@@ -45,7 +45,7 @@ export default function Register() {
 
   if (done) {
     return (
-      <AuthShell eyebrow="Registration" title="You're all set">
+      <AuthShell slug={slug} eyebrow="Registration" title="You're all set">
         <div className="stack" style={{ alignItems: 'center', textAlign: 'center' }}>
           <CheckCircle2 size={44} color="var(--success)" />
           <p className="text-muted">
@@ -62,6 +62,7 @@ export default function Register() {
 
   return (
     <AuthShell
+      slug={slug}
       eyebrow="Student registration"
       title="Create your account"
       subtitle="Join your organization's learning portal."

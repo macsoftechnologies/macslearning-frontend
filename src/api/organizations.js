@@ -1,5 +1,7 @@
 import client from './client';
 
+export const getPublicBySlug = (slug) => client.get(`/public/organizations/${slug}`);
+
 export const list = (params) => client.get('/organizations', { params });
 export const create = (data) => client.post('/organizations', data);
 export const updateStatus = (id, status) => client.patch(`/organizations/${id}/status`, { status });

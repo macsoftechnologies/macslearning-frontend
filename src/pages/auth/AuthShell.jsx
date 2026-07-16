@@ -1,15 +1,37 @@
+import { useState, useEffect } from 'react';
 import { BookMarked } from 'lucide-react';
+import { getPublicBySlug } from '../../api/organizations';
 import './AuthShell.css';
 
-export default function AuthShell({ eyebrow, title, subtitle, children, wide, footer }) {
+export default function AuthShell({ eyebrow, title, subtitle, children, wide, footer, slug }) {
+  const [org, setOrg] = useState(null);
+
+  useEffect(() => {
+    if (slug) {
+      getPublicBySlug(slug)
+        .then((res) => {
+          if (res.data?.data) {
+            setOrg(res.data.data);
+          } else if (res.data) {
+            setOrg(res.data);
+          }
+        })
+        .catch(() => setOrg(null));
+    }
+  }, [slug]);
+
   return (
     <div className="auth-shell">
       <div className="auth-shell__side">
         <div className="auth-shell__brand">
-          <span className="auth-shell__mark">
-            <BookMarked size={20} />
-          </span>
-          <span> LMS</span>
+          {org?.logoUrl ? (
+            <img src={org.logoUrl} alt={`${org.name} logo`} style={{ maxHeight: '32px', marginRight: '8px' }} />
+          ) : (
+            <span className="auth-shell__mark">
+              <BookMarked size={20} />
+            </span>
+          )}
+          <span> {org?.name || 'LMS'}</span>
         </div>
         <div className="auth-shell__quote">
           <p className="auth-shell__quote-text">
