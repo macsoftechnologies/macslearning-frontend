@@ -31,6 +31,11 @@ export function AuthProvider({ children }) {
     if (data.user.organizationSlug) {
       localStorage.setItem('orgSlug', data.user.organizationSlug);
     }
+    if (data.user.organizationName) {
+      localStorage.setItem('orgName', data.user.organizationName);
+    } else if (data.user.userType === 'SUPER_ADMIN') {
+      localStorage.setItem('orgName', 'MacsLearn');
+    }
     setLoading(false);
   }, []);
 
@@ -113,6 +118,7 @@ export function AuthProvider({ children }) {
     }
     clearTokens();
     localStorage.removeItem('orgSlug');
+    localStorage.removeItem('orgName');
     setUser(null);
     setRole(null);
     // window.location.href = logoutUrl;
