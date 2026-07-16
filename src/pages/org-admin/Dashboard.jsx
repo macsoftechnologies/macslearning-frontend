@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, Clock, BookOpen, Users, ClipboardList, Wallet, UserPlus, Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { GraduationCap, Clock, BookOpen, Users, ClipboardList, Wallet, UserPlus, Plus, Copy } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { StatCard } from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -12,11 +14,22 @@ import * as coursesApi from '../../api/courses';
 import * as categoriesApi from '../../api/categories';
 
 export default function AdminDashboard() {
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [pending, setPending] = useState([]);
   const [recentCourses, setRecentCourses] = useState([]);
   const [catMap, setCatMap] = useState({});
   const [loading, setLoading] = useState(true);
+
+  const orgSlug = user?.organizationSlug || user?.organizationCode || localStorage.getItem('orgSlug') || '';
+  const baseUrl = window.location.origin + '/macslearnfrontend';
+  const loginUrl = `${baseUrl}/${orgSlug}/login`;
+  const registerUrl = `${baseUrl}/${orgSlug}/register`;
+
+  const copyToClipboard = (text, label) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} URL copied to clipboard!`);
+  };
 
   useEffect(() => {
     (async () => {
@@ -64,6 +77,30 @@ export default function AdminDashboard() {
         <StatCard label="Revenue" value={stats?.revenue != null ? `$${stats.revenue}` : '—'} icon={Wallet} tone="amber" />
       </div>
 
+      <div className="card" style={{ marginBottom: 'var(--sp-8)', padding: '20px' }}>
+        <h3 style={{ margin: '0 0 var(--sp-4) 0', fontSize: 'var(--fs-sm)', color: 'var(--c-text-muted)' }}>Quick Share Links</h3>
+        <div className="stack" style={{ gap: 'var(--sp-4)' }}>
+          <div className="row" style={{ alignItems: 'center', gap: 'var(--sp-4)' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--c-text-muted)' }}>Student Registration URL</label>
+              <div style={{ padding: '8px 12px', background: 'var(--c-bg-subtle)', borderRadius: 'var(--r-md)', fontSize: '13px', fontFamily: 'monospace', color: 'var(--c-text)', wordBreak: 'break-all' }}>
+                {registerUrl}
+              </div>
+            </div>
+            <Button variant="outline" size="sm" icon={Copy} onClick={() => copyToClipboard(registerUrl, 'Registration')}>Copy</Button>
+          </div>
+          <div className="row" style={{ alignItems: 'center', gap: 'var(--sp-4)' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--c-text-muted)' }}>Organization Login URL</label>
+              <div style={{ padding: '8px 12px', background: 'var(--c-bg-subtle)', borderRadius: 'var(--r-md)', fontSize: '13px', fontFamily: 'monospace', color: 'var(--c-text)', wordBreak: 'break-all' }}>
+                {loginUrl}
+              </div>
+            </div>
+            <Button variant="outline" size="sm" icon={Copy} onClick={() => copyToClipboard(loginUrl, 'Login')}>Copy</Button>
+          </div>
+        </div>
+      </div >
+
       <div className="stack" style={{ gap: 'var(--sp-8)' }}>
         <section>
           <div className="row" style={{ justifyContent: 'space-between', marginBottom: 'var(--sp-4)' }}>
@@ -100,6 +137,6 @@ export default function AdminDashboard() {
           />
         </section>
       </div>
-    </div>
+    </div >
   );
 }

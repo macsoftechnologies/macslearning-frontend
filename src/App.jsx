@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { RoleGuard, PermissionGuard } from './utils/roleGuard';
@@ -78,8 +78,22 @@ import ScrollToTop from './components/ScrollToTop';
 function RootRedirect() {
   const { user, role, loading, homeFor } = useAuth();
   if (loading) return <PageLoader />;
-  if (!user) return <Navigate to="/login" replace />;
+  const slug = localStorage.getItem('orgSlug');
+  if (!user) {
+    if (slug) return <Navigate to={`/${slug}/login`} replace />;
+    return <Navigate to="/unauthorized" replace />;
+  }
   return <Navigate to={homeFor(role)} replace />;
+}
+
+function AuthRedirect() {
+  const location = useLocation();
+  const slug = localStorage.getItem('orgSlug');
+  if (slug) {
+    const isRegister = location.pathname.includes('register');
+    return <Navigate to={`/${slug}/${isRegister ? 'register' : 'login'}`} replace />;
+  }
+  return <Navigate to="/unauthorized" replace />;
 }
 
 export default function App() {
@@ -96,10 +110,10 @@ export default function App() {
         />
         <Routes>
           <Route path="/" element={<RootRedirect />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<AuthRedirect />} />
           <Route path="/:slug/login" element={<Login />} />
           <Route path="/super-admin/login" element={<SuperAdminLogin />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<AuthRedirect />} />
           <Route path="/:slug/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 

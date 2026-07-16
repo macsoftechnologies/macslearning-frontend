@@ -23,7 +23,7 @@ export default function Register() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    regionsApi.list().then(res => setRegions(res.data?.data || [])).catch(() => {});
+    regionsApi.list({ slug }).then(res => setRegions(res.data?.data || [])).catch(() => {});
   }, []);
 
   const update = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));

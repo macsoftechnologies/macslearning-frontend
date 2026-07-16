@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import { ArrowLeft, Power } from 'lucide-react';
+import { ArrowLeft, Power, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as organizationsApi from '../../api/organizations';
 import * as usersApi from '../../api/users';
@@ -47,6 +47,16 @@ export default function OrganizationDetail() {
   if (loading) return <PageLoader />;
   if (!org) return <div className="page"><p>Organization not found.</p></div>;
 
+  const baseUrl = window.location.origin + '/macslearnfrontend';
+  const loginUrl = org.slug ? `${baseUrl}/${org.slug}/login` : '—';
+  const registerUrl = org.slug ? `${baseUrl}/${org.slug}/register` : '—';
+
+  const copyToClipboard = (text, label) => {
+    if (text === '—') return;
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} URL copied to clipboard!`);
+  };
+
   return (
     <div className="page">
       <Link to="/super-admin/organizations" className="row text-muted" style={{ marginBottom: 'var(--sp-4)', fontSize: 'var(--fs-xs)', fontWeight: 600 }}>
@@ -66,13 +76,36 @@ export default function OrganizationDetail() {
         </Button>
       </div>
 
+      <div className="card" style={{ marginBottom: 'var(--sp-8)', padding: '20px' }}>
+        <h3 style={{ margin: '0 0 var(--sp-4) 0', fontSize: 'var(--fs-sm)', color: 'var(--c-text-muted)' }}>Quick Share Links</h3>
+        <div className="stack" style={{ gap: 'var(--sp-4)' }}>
+          <div className="row" style={{ alignItems: 'center', gap: 'var(--sp-4)' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--c-text-muted)' }}>Student Registration URL</label>
+              <div style={{ padding: '8px 12px', background: 'var(--c-bg-subtle)', borderRadius: 'var(--r-md)', fontSize: '13px', fontFamily: 'monospace', color: 'var(--c-text)', wordBreak: 'break-all' }}>
+                {registerUrl}
+              </div>
+            </div>
+            <Button variant="outline" size="sm" icon={Copy} onClick={() => copyToClipboard(registerUrl, 'Registration')}>Copy</Button>
+          </div>
+          <div className="row" style={{ alignItems: 'center', gap: 'var(--sp-4)' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--c-text-muted)' }}>Organization Login URL</label>
+              <div style={{ padding: '8px 12px', background: 'var(--c-bg-subtle)', borderRadius: 'var(--r-md)', fontSize: '13px', fontFamily: 'monospace', color: 'var(--c-text)', wordBreak: 'break-all' }}>
+                {loginUrl}
+              </div>
+            </div>
+            <Button variant="outline" size="sm" icon={Copy} onClick={() => copyToClipboard(loginUrl, 'Login')}>Copy</Button>
+          </div>
+        </div>
+      </div>
+
       <div className="form-grid" style={{ marginBottom: 'var(--sp-8)' }}>
         <Card style={{ padding: 'var(--sp-5)' }}>
           <p className="section-title">Organization Info</p>
           <div className="stack" style={{ gap: 8 }}>
             <Row label="Code" value={org.code} />
             <Row label="Slug" value={org.slug || '—'} />
-            <Row label="Login URL" value={org.loginUrl || '—'} />
             <Row label="Contact Email" value={org.contactInfo?.email || '—'} />
             <Row label="Contact Phone" value={org.contactInfo?.phone || '—'} />
             <Row label="Address" value={org.contactInfo?.address || '—'} />
