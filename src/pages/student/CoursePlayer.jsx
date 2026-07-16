@@ -75,7 +75,10 @@ export default function CoursePlayer() {
   const [previewContentUrl, setPreviewContentUrl] = useState(null);
   const [finalExam, setFinalExam] = useState(null);
   
+  const [selectedOption, setSelectedOption] = useState(null);
+  
   const lastSavedTimeRef = useRef(0);
+  const lastPlayedSecondsRef = useRef(0);
   const isSeekingRef = useRef(false);
   const playerRef = useRef(null);
 
@@ -153,11 +156,41 @@ export default function CoursePlayer() {
 
   const handleProgress = (state) => {
     const currentSeconds = Math.floor(state.playedSeconds);
+    const lastSeconds = lastPlayedSecondsRef.current;
+
+    // Check if they skipped ahead by more than 2 seconds
+    if (currentSeconds > lastSeconds + 2) {
+      const skippedQuiz = videoQuizzes
+        .sort((a, b) => a.timestampSeconds - b.timestampSeconds)
+        .find(q => {
+          const ts = Math.floor(q.timestampSeconds);
+          return ts > lastSeconds && ts <= currentSeconds && !answeredQuizzes.has(q._id || q.id);
+        });
+
+      if (skippedQuiz) {
+        playerRef.current?.seekTo(skippedQuiz.timestampSeconds, 'seconds');
+        setPlaying(false);
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+        setActiveQuiz(skippedQuiz);
+        setSelectedOption(null);
+        setTheoryAnswer('');
+        return;
+      }
+    }
+
+    lastPlayedSecondsRef.current = currentSeconds;
+
     const quiz = videoQuizzes.find(q => Math.floor(q.timestampSeconds) === currentSeconds);
     
     if (quiz && !answeredQuizzes.has(quiz._id || quiz.id)) {
       setPlaying(false);
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
       setActiveQuiz(quiz);
+      setSelectedOption(null);
       setTheoryAnswer('');
     }
 
@@ -343,7 +376,7 @@ export default function CoursePlayer() {
                 
                 {activeQuiz && (
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: 'var(--sp-6)' }}>
-                    <div style={{ background: '#ffffff', color: '#0f172a', padding: '32px', borderRadius: '16px', width: '100%', maxWidth: 550, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', border: '1px solid #e2e8f0' }}>
+                    <div style={{ background: '#ffffff', color: '#0f172a', padding: '24px', borderRadius: '16px', width: '90%', maxWidth: 500, maxHeight: '90%', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', border: '1px solid #e2e8f0' }}>
                       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
                         <span style={{ background: '#eff6ff', color: '#2563eb', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           {activeQuiz.type === 'THEORY' ? 'Short Answer' : activeQuiz.type === 'TRUE_FALSE' ? 'True or False' : 'Quick Knowledge Check'}
@@ -364,16 +397,23 @@ export default function CoursePlayer() {
                             </Button>
                           </>
                         ) : (
-                          activeQuiz.options?.map((opt, i) => (
-                            <Button 
-                              key={i} 
-                              variant="outline" 
-                              onClick={() => handleQuizAnswer(opt)} 
-                              style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '14px 20px', fontSize: '15px', borderColor: '#cbd5e1', color: '#334155', background: '#f8fafc' }}
-                            >
-                              {opt.text}
-                            </Button>
-                          ))
+                          <>
+                            {activeQuiz.options?.map((opt, i) => (
+                              <Button 
+                                key={i} 
+                                variant={selectedOption?.text === opt.text ? "primary" : "outline"} 
+                                onClick={() => setSelectedOption(opt)} 
+                                style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '14px 20px', fontSize: '15px', borderColor: selectedOption?.text === opt.text ? 'transparent' : '#cbd5e1', color: selectedOption?.text === opt.text ? '#fff' : '#334155', background: selectedOption?.text === opt.text ? 'var(--color-primary-600)' : '#f8fafc' }}
+                              >
+                                {opt.text}
+                              </Button>
+                            ))}
+                            <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                              <Button onClick={() => handleQuizAnswer(selectedOption)} disabled={!selectedOption}>
+                                Submit Answer
+                              </Button>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>

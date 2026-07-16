@@ -44,12 +44,16 @@ export default function Profile() {
     setErrors([]);
     if (pwForm.newPassword !== pwForm.confirmPassword) {
       setErrors(['New password and confirmation do not match.']);
+      setConfirmPasswordOpen(false);
       return;
     }
     setSaving(true);
     setConfirmPasswordOpen(false);
     try {
-      await authApi.changePassword(pwForm);
+      await authApi.changePassword({
+        old_password: pwForm.currentPassword,
+        new_password: pwForm.newPassword
+      });
       toast.success('Password changed');
       setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {

@@ -9,14 +9,16 @@ export const buildStaticUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
   
-  let normalizedPath = path;
-  if (normalizedPath.startsWith('/uploads')) {
-    normalizedPath = '/public' + normalizedPath;
-  } else if (normalizedPath.startsWith('uploads/')) {
-    normalizedPath = '/public/' + normalizedPath;
+  let normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+  if (normalizedPath.startsWith('uploads/')) {
+    if (STATIC_BASE_URL.includes('launchpaad.tech')) {
+      normalizedPath = 'public/' + normalizedPath;
+    } else {
+      normalizedPath = normalizedPath;
+    }
   }
 
-  return `${STATIC_BASE_URL}${normalizedPath.startsWith('/') ? '' : '/'}${normalizedPath}`;
+  return `${STATIC_BASE_URL}/${normalizedPath}`;
 };
 
 const client = axios.create({ baseURL: API_BASE_URL });
