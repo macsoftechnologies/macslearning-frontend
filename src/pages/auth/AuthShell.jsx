@@ -5,9 +5,11 @@ import './AuthShell.css';
 
 export default function AuthShell({ eyebrow, title, subtitle, children, wide, footer, slug }) {
   const [org, setOrg] = useState(null);
+  const [loading, setLoading] = useState(!!slug);
 
   useEffect(() => {
     if (slug) {
+      setLoading(true);
       getPublicBySlug(slug)
         .then((res) => {
           if (res.data?.data) {
@@ -16,22 +18,37 @@ export default function AuthShell({ eyebrow, title, subtitle, children, wide, fo
             setOrg(res.data);
           }
         })
-        .catch(() => setOrg(null));
+        .catch(() => setOrg(null))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
   }, [slug]);
+
+  useEffect(() => {
+    if (org?.name) {
+      document.title = `${org.name} - Login`;
+    } else {
+      document.title = 'LMS';
+    }
+  }, [org?.name]);
 
   return (
     <div className="auth-shell">
       <div className="auth-shell__side">
-        <div className="auth-shell__brand">
-          {org?.logoUrl ? (
-            <img src={org.logoUrl} alt={`${org.name} logo`} style={{ maxHeight: '32px', marginRight: '8px' }} />
-          ) : (
-            <span className="auth-shell__mark">
-              <BookMarked size={20} />
-            </span>
+        <div className="auth-shell__brand" style={{ minHeight: '32px' }}>
+          {!loading && (
+            <>
+              {org?.logoUrl ? (
+                <img src={org.logoUrl} alt={`${org.name} logo`} style={{ maxHeight: '32px', marginRight: '8px' }} />
+              ) : (
+                <span className="auth-shell__mark">
+                  <BookMarked size={20} />
+                </span>
+              )}
+              <span> {org?.name || 'LMS'}</span>
+            </>
           )}
-          <span> {org?.name || 'LMS'}</span>
         </div>
         <div className="auth-shell__quote">
           <p className="auth-shell__quote-text">

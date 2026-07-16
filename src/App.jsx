@@ -145,20 +145,11 @@ export default function App() {
             }
           >
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/regions" element={<Regions />} />
-
             <Route path="/admin/students" element={<Students />} />
             <Route path="/admin/students/:id" element={<StudentProfile />} />
             <Route path="/admin/faculty" element={<Faculty />} />
             <Route path="/admin/faculty/:id" element={<FacultyProfile />} />
             <Route path="/admin/finance-team" element={<FinanceTeam />} />
-            
-             <Route path="/admin/categories" element={<Categories />} />
-           <Route path="/admin/certificate-templates" element={<CertificateTemplates />} />
-            <Route path="/admin/certificate-templates/create" element={<CertificateTemplateBuilder />} />
-            <Route path="/admin/certificate-templates/:id" element={<CertificateTemplateBuilder />} />
-            
-             
             <Route path="/admin/courses" element={<Courses />} />
             <Route path="/admin/courses/create" element={<CourseForm />} />
             <Route path="/admin/courses/:id/edit" element={<CourseForm />} />
@@ -168,8 +159,8 @@ export default function App() {
             <Route path="/admin/courses/:id/exams/:examId" element={<ExamBuilder />} />
             <Route path="/admin/courses/:id/exams/:examId/results" element={<ExamResults />} />
             <Route path="/admin/courses/:id/assignments/:assignmentId/submissions" element={<AssignmentSubmissions />} />
-           
-            
+            <Route path="/admin/categories" element={<Categories />} />
+            <Route path="/admin/regions" element={<Regions />} />
             <Route path="/admin/enrollments" element={<Enrollments />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/reports/overview" element={<ReportsOverview />} />
@@ -177,7 +168,9 @@ export default function App() {
             <Route path="/admin/reports/student-activity" element={<StudentActivity />} />
             <Route path="/admin/settings/organization" element={<OrganizationSettings />} />
             <Route path="/admin/course-plans" element={<CoursePlans />} />
-            
+            <Route path="/admin/certificate-templates" element={<CertificateTemplates />} />
+            <Route path="/admin/certificate-templates/create" element={<CertificateTemplateBuilder />} />
+            <Route path="/admin/certificate-templates/:id" element={<CertificateTemplateBuilder />} />
             <Route path="/admin/settings/profile" element={<Profile />} />
             <Route path="/admin/notifications" element={<Notifications />} />
             <Route path="/admin/profile" element={<Profile />} />
