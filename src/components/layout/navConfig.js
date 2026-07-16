@@ -14,18 +14,17 @@ export const NAV = {
   ],
   ORG_USER: [
     { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/admin/regions', label: 'Regions', icon: Compass },
     { to: '/admin/students', label: 'Students', icon: GraduationCap },
     { to: '/admin/faculty', label: 'Faculty', icon: Users },
     { to: '/admin/finance-team', label: 'Finance Team', icon: Users },
-    { to: '/admin/course-plans', label: 'Course Plan', icon: FileCheck2 },
-    { to: '/admin/certificate-templates', label: 'Certificates', icon: Award },
-    { to: '/admin/courses', label: 'Courses', icon: BookOpen },
     { to: '/admin/categories', label: 'Categories', icon: FolderTree },
-    { to: '/admin/regions', label: 'Regions', icon: Compass },
+    { to: '/admin/certificate-templates', label: 'Certificates', icon: Award },
+    { to: '/admin/course-plans', label: 'Course Plan', icon: FileCheck2 },
+    { to: '/admin/courses', label: 'Courses', icon: BookOpen },
     { to: '/admin/enrollments', label: 'Enrollments', icon: ClipboardList },
     { to: '/admin/payments', label: 'Payments', icon: Wallet },
     { to: '/admin/reports/overview', label: 'Reports', icon: BarChart3 },
-    
     { to: '/admin/settings/organization', label: 'Settings', icon: Settings },
   ],
   FACULTY: [
