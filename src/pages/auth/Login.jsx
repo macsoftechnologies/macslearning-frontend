@@ -43,9 +43,9 @@ export default function Login() {
           New student?{' '}
           <Link to="/register">Register here</Link>
           <br />
-          <span style={{ display: 'inline-block', marginTop: 10 }}>
+          {/* <span style={{ display: 'inline-block', marginTop: 10 }}>
             Super Admin? <Link to="/super-admin/login">Sign in here</Link>
-          </span>
+          </span> */}
         </>
       }
     >

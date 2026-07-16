@@ -36,11 +36,7 @@ export default function SuperAdminLogin() {
       eyebrow="Super admin"
       title="Platform sign in"
       subtitle="Restricted access for platform administrators."
-      footer={
-        <>
-          Not a super admin? <Link to="/login">Back to standard sign in</Link>
-        </>
-      }
+
     >
       <form className="stack" onSubmit={onSubmit}>
         {errors.length > 0 && (
