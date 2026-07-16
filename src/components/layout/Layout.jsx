@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
@@ -8,6 +8,14 @@ import './Layout.css';
 export default function Layout({ title }) {
   const { role, user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const orgName = role === 'SUPER_ADMIN' 
+      ? 'MacsLearn' 
+      : (user?.organizationName || user?.organizationId?.name || 'LMS');
+    
+    document.title = orgName;
+  }, [user, role]);
 
   return (
     <div className="app-shell">
