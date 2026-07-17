@@ -57,36 +57,37 @@ client.interceptors.response.use(
       
       if (!original?._retry && getRefreshToken()) {
         if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          original.headers.Authorization = `Bearer ${token}`;
-          return client(original);
-        });
-      }
-
-      original._retry = true;
-      isRefreshing = true;
-
-      try {
-        const { data } = await axios.post(
-          `${API_BASE_URL}/auth/refresh-token`,
-          { refreshToken: getRefreshToken() }
-        );
-        const newToken = data.data.accessToken;
-        setTokens({ accessToken: newToken, refreshToken: data.data.refreshToken || getRefreshToken() });
-        processQueue(null, newToken);
-        original.headers.Authorization = `Bearer ${newToken}`;
-        return client(original);
-      } catch (refreshErr) {
-        processQueue(refreshErr, null);
-        clearTokens();
-        if (!window.location.pathname.includes('login')) {
-          window.location.href = '/login';
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          }).then((token) => {
+            original.headers.Authorization = `Bearer ${token}`;
+            return client(original);
+          });
         }
-        return Promise.reject(refreshErr);
-      } finally {
-        isRefreshing = false;
+
+        original._retry = true;
+        isRefreshing = true;
+
+        try {
+          const { data } = await axios.post(
+            `${API_BASE_URL}/auth/refresh-token`,
+            { refreshToken: getRefreshToken() }
+          );
+          const newToken = data.data.accessToken;
+          setTokens({ accessToken: newToken, refreshToken: data.data.refreshToken || getRefreshToken() });
+          processQueue(null, newToken);
+          original.headers.Authorization = `Bearer ${newToken}`;
+          return client(original);
+        } catch (refreshErr) {
+          processQueue(refreshErr, null);
+          clearTokens();
+          if (!window.location.pathname.includes('login')) {
+            window.location.href = '/login';
+          }
+          return Promise.reject(refreshErr);
+        } finally {
+          isRefreshing = false;
+        }
       }
     }
 
