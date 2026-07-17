@@ -6,29 +6,32 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Input from '../../components/ui/Input';
 import usePagination from '../../hooks/usePagination';
 import useDebounce from '../../hooks/useDebounce';
-import * as paymentsApi from '../../api/payments';
+import * as organizationsApi from '../../api/organizations';
 import { exportToCSV } from '../../utils/export';
 
 export default function GlobalPayments() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 500);
 
+  // We are fetching organizations to read their subscription/payment details
   const { items, page, setPage, meta, loading } = usePagination(
-    paymentsApi.superAdminList,
+    organizationsApi.list,
     { search: debouncedSearch }
   );
 
   const handleExport = () => {
-    const data = items.map(i => ({
-      'Invoice': i.invoiceNumber || 'N/A',
-      'Student Name': i.studentId?.fullName || 'N/A',
-      'Student Email': i.studentId?.email || 'N/A',
-      'Course': i.courseId?.title || 'N/A',
-      'Amount': `${i.currency || 'USD'} ${i.amount}`,
-      'Status': i.status,
-      'Date': new Date(i.createdAt).toLocaleDateString()
-    }));
-    exportToCSV(data, 'global_payments');
+    const data = items.map(org => {
+      const sub = org.subscriptionConfig || {};
+      return {
+        'Transaction ID': sub.paymentReferenceId || 'N/A',
+        'Organization': org.name,
+        'Plan': sub.planType || 'N/A',
+        'Amount': sub.price ? `${sub.currency || 'USD'} ${sub.price}` : 'N/A',
+        'Status': sub.paymentStatus || 'PENDING',
+        'Date': sub.lastPaymentDate ? new Date(sub.lastPaymentDate).toLocaleDateString() : 'N/A'
+      };
+    });
+    exportToCSV(data, 'organization_payments');
   };
 
   return (
@@ -37,7 +40,7 @@ export default function GlobalPayments() {
         <div>
           <span className="page-eyebrow">Finance</span>
           <h1 className="page-title">Global Payments</h1>
-          <p className="page-subtitle">Track all payments across all organizations.</p>
+          <p className="page-subtitle">Track SaaS subscription payments across all organizations.</p>
         </div>
         <div className="page-actions">
           <Button variant="outline" onClick={handleExport} icon={Download}>Export CSV</Button>
@@ -47,7 +50,7 @@ export default function GlobalPayments() {
       <div className="card">
         <div className="filters">
           <Input
-            placeholder="Search invoice number..."
+            placeholder="Search organizations..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ maxWidth: 300 }}
@@ -56,12 +59,15 @@ export default function GlobalPayments() {
 
         <DataTable
           columns={[
-            { key: 'invoiceNumber', header: 'Invoice', render: r => <span style={{ fontFamily: 'monospace' }}>{r.invoiceNumber || 'N/A'}</span> },
-            { key: 'student', header: 'Student', render: r => r.studentId?.fullName || '—' },
-            { key: 'course', header: 'Course', render: r => r.courseId?.title || '—' },
-            { key: 'amount', header: 'Amount', render: r => <strong>{r.currency} {r.amount}</strong> },
-            { key: 'status', header: 'Status', render: r => <StatusBadge status={r.status} /> },
-            { key: 'createdAt', header: 'Date', render: r => new Date(r.createdAt).toLocaleDateString() }
+            { key: 'ref', header: 'Transaction ID', render: r => <span style={{ fontFamily: 'monospace' }}>{r.subscriptionConfig?.paymentReferenceId || 'N/A'}</span> },
+            { key: 'org', header: 'Organization', render: r => <strong>{r.name}</strong> },
+            { key: 'plan', header: 'Plan', render: r => r.subscriptionConfig?.planType || '—' },
+            { key: 'amount', header: 'Amount', render: r => {
+                const price = r.subscriptionConfig?.price;
+                return price ? <strong>{r.subscriptionConfig?.currency || 'USD'} {price}</strong> : '—';
+            } },
+            { key: 'status', header: 'Status', render: r => <StatusBadge status={r.subscriptionConfig?.paymentStatus || 'PENDING'} /> },
+            { key: 'date', header: 'Date', render: r => r.subscriptionConfig?.lastPaymentDate ? new Date(r.subscriptionConfig.lastPaymentDate).toLocaleDateString() : '—' }
           ]}
           rows={items}
           loading={loading}
@@ -71,7 +77,7 @@ export default function GlobalPayments() {
             totalItems: meta.totalItems,
             onPageChange: setPage
           }}
-          emptyLabel="No payments found across any organization."
+          emptyLabel="No organization subscription payments found."
         />
       </div>
     </div>

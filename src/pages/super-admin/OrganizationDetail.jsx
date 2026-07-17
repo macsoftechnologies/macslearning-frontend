@@ -145,10 +145,10 @@ export default function OrganizationDetail() {
           <div className="stack" style={{ gap: 8 }}>
             <div className="row" style={{ justifyContent: 'space-between', fontSize: 'var(--fs-sm)' }}>
               <span className="text-muted">Status</span>
-              <StatusBadge status={org.paymentStatus || 'PENDING'} />
+              <StatusBadge status={org.subscriptionConfig?.paymentStatus || 'PENDING'} />
             </div>
-            <Row label="Last Payment" value={org.lastPaymentDate ? new Date(org.lastPaymentDate).toLocaleDateString() : '—'} />
-            <Row label="Transaction ID" value={org.paymentReferenceId || '—'} />
+            <Row label="Last Payment" value={org.subscriptionConfig?.lastPaymentDate ? new Date(org.subscriptionConfig.lastPaymentDate).toLocaleDateString() : '—'} />
+            <Row label="Transaction ID" value={org.subscriptionConfig?.paymentReferenceId || '—'} />
           </div>
         </Card>
       </div>
@@ -232,10 +232,10 @@ function EditOrganizationModal({ open, onClose, org, onSaved }) {
           maxStudents: org.subscriptionConfig?.maxStudents ?? 0,
           maxStorageGB: org.subscriptionConfig?.maxStorageGB ?? 0,
         },
-        paymentStatus: org.paymentStatus || 'PENDING',
-        lastPaymentDate: org.lastPaymentDate ? new Date(org.lastPaymentDate).toISOString().split('T')[0] : '',
-        paymentReferenceId: org.paymentReferenceId || '',
-        receiptUrl: org.receiptUrl || '',
+        paymentStatus: org.subscriptionConfig?.paymentStatus || 'PENDING',
+        lastPaymentDate: org.subscriptionConfig?.lastPaymentDate ? new Date(org.subscriptionConfig.lastPaymentDate).toISOString().split('T')[0] : '',
+        paymentReferenceId: org.subscriptionConfig?.paymentReferenceId || '',
+        receiptUrl: org.subscriptionConfig?.receiptUrl || '',
       });
     }
   }, [open, org]);
