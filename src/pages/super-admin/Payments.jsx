@@ -12,6 +12,13 @@ import { exportToCSV } from '../../utils/export';
 export default function GlobalPayments() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 500);
+  const [plans, setPlans] = useState([]);
+
+  useEffect(() => {
+    import('../../api/subscriptionPlans').then(api => {
+      api.list().then(res => setPlans(res.data?.data || [])).catch(() => {});
+    });
+  }, []);
 
   // We are fetching organizations to read their subscription/payment details
   const { items, page, setPage, meta, loading } = usePagination(
@@ -22,11 +29,20 @@ export default function GlobalPayments() {
   const handleExport = () => {
     const data = items.map(org => {
       const sub = org.subscriptionConfig || {};
+      let price = sub.price;
+      let currency = sub.currency || 'USD';
+      if (price === undefined && sub.planType) {
+        const p = plans.find(plan => plan.code === sub.planType || plan.id === sub.planId);
+        if (p) {
+          price = p.price;
+          currency = p.currency || 'USD';
+        }
+      }
       return {
         'Transaction ID': sub.paymentReferenceId || 'N/A',
         'Organization': org.name,
         'Plan': sub.planType || 'N/A',
-        'Amount': sub.price ? `${sub.currency || 'USD'} ${sub.price}` : 'N/A',
+        'Amount': price !== undefined ? `${currency} ${price}` : 'N/A',
         'Status': sub.paymentStatus || 'PENDING',
         'Date Paid': sub.lastPaymentDate ? new Date(sub.lastPaymentDate).toLocaleDateString() : 'N/A',
         'Expires At': sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString() : 'N/A'
@@ -64,8 +80,18 @@ export default function GlobalPayments() {
             { key: 'org', header: 'Organization', render: r => <strong>{r.name}</strong> },
             { key: 'plan', header: 'Plan', render: r => r.subscriptionConfig?.planType || '—' },
             { key: 'amount', header: 'Amount', render: r => {
-                const price = r.subscriptionConfig?.price;
-                return price ? <strong>{r.subscriptionConfig?.currency || 'USD'} {price}</strong> : '—';
+                let price = r.subscriptionConfig?.price;
+                let currency = r.subscriptionConfig?.currency || 'USD';
+                
+                if (price === undefined && r.subscriptionConfig?.planType) {
+                  const matchedPlan = plans.find(p => p.code === r.subscriptionConfig.planType || p.id === r.subscriptionConfig.planId);
+                  if (matchedPlan) {
+                    price = matchedPlan.price;
+                    currency = matchedPlan.currency || 'USD';
+                  }
+                }
+
+                return price !== undefined ? <strong>{currency} {price}</strong> : '—';
             } },
             { key: 'status', header: 'Status', render: r => <StatusBadge status={r.subscriptionConfig?.paymentStatus || 'PENDING'} /> },
             { key: 'date', header: 'Date Paid', render: r => r.subscriptionConfig?.lastPaymentDate ? new Date(r.subscriptionConfig.lastPaymentDate).toLocaleDateString() : '—' },
