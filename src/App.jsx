@@ -17,6 +17,9 @@ import OrganizationDetail from './pages/super-admin/OrganizationDetail';
 import SubscriptionPlans from './pages/super-admin/SubscriptionPlans';
 import AuditLogs from './pages/super-admin/AuditLogs';
 import SuperAdminTeam from './pages/super-admin/Team';
+import GlobalPayments from './pages/super-admin/Payments';
+import GlobalUsers from './pages/super-admin/Users';
+import GlobalStudents from './pages/super-admin/Students';
 
 // Org Admin
 import AdminDashboard from './pages/org-admin/Dashboard';
@@ -131,6 +134,9 @@ export default function App() {
             <Route path="/super-admin/subscription-plans" element={<PermissionGuard allowedPermissions={['TRACK_ORGANIZATIONS', 'TRACK_FINANCE']}><SubscriptionPlans /></PermissionGuard>} />
             <Route path="/super-admin/audit-logs" element={<PermissionGuard allowedPermissions={['TRACK_USERS', 'TRACK_ORGANIZATIONS']}><AuditLogs /></PermissionGuard>} />
             <Route path="/super-admin/team" element={<PermissionGuard allowedPermissions={['MANAGE_ROLES']}><SuperAdminTeam /></PermissionGuard>} />
+            <Route path="/super-admin/payments" element={<PermissionGuard allowedPermissions={['TRACK_FINANCE']}><GlobalPayments /></PermissionGuard>} />
+            <Route path="/super-admin/users" element={<PermissionGuard allowedPermissions={['TRACK_USERS']}><GlobalUsers /></PermissionGuard>} />
+            <Route path="/super-admin/students" element={<PermissionGuard allowedPermissions={['TRACK_STUDENTS']}><GlobalStudents /></PermissionGuard>} />
             <Route path="/super-admin/notifications" element={<Notifications />} />
             <Route path="/super-admin/profile" element={<Profile />} />
             <Route path="/super-admin/*" element={<NotFound />} />

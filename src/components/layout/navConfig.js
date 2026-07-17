@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Building2, CreditCard, ScrollText, Users, GraduationCap,
   BookOpen, FolderTree, ClipboardList, Wallet, BarChart3, Settings,
-  FileCheck2, PenSquare, MessagesSquare, Compass, Library, Award, Receipt, UserCircle,
+  FileCheck2, PenSquare, MessagesSquare, Compass, Library, Award, Receipt, UserCircle, Shield
 } from 'lucide-react';
 
 export const NAV = {
@@ -10,7 +10,10 @@ export const NAV = {
     { to: '/super-admin/organizations', label: 'Organizations', icon: Building2, requiredPermissions: ['TRACK_ORGANIZATIONS'] },
     { to: '/super-admin/subscription-plans', label: 'Subscription Plans', icon: CreditCard, requiredPermissions: ['TRACK_ORGANIZATIONS'] },
     { to: '/super-admin/audit-logs', label: 'Audit Logs', icon: ScrollText }, // Maybe always visible or add a permission later
-    { to: '/super-admin/team', label: 'Team', icon: Users, requiredPermissions: ['MANAGE_ROLES'] },
+    { to: '/super-admin/payments', label: 'Payments', icon: Wallet, requiredPermissions: ['TRACK_FINANCE'] },
+    { to: '/super-admin/users', label: 'All Users', icon: Users, requiredPermissions: ['TRACK_USERS'] },
+    { to: '/super-admin/students', label: 'Students', icon: GraduationCap, requiredPermissions: ['TRACK_STUDENTS'] },
+    { to: '/super-admin/team', label: 'Team', icon: Shield, requiredPermissions: ['MANAGE_ROLES'] },
   ],
   ORG_USER: [
     { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },

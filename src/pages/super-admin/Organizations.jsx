@@ -20,6 +20,8 @@ export default function Organizations() {
   const [activeTab, setActiveTab] = useState('ALL');
   const [modalOpen, setModalOpen] = useState(false);
   const [toggleTarget, setToggleTarget] = useState(null);
+  const debouncedSearch = useDebounce(search, 500);
+  
   const { items, page, setPage, meta, loading, refresh } = usePagination(
     organizationsApi.list,
     { search: debouncedSearch, filter: activeTab === 'EXPIRING' ? 'expiring' : undefined }
