@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as plansApi from '../../api/subscriptionPlans';
+import * as regionsApi from '../../api/regions';
 import { extractErrorMessages } from '../../api/client';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
@@ -12,10 +13,11 @@ import EmptyState from '../../components/ui/EmptyState';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import PageLoader from '../../components/ui/PageLoader';
 
-const emptyForm = { name: '', code: '', price: '', currency: 'USD', durationInDays: 30, maxUsers: '', storageGB: '', isActive: true };
+const emptyForm = { name: '', code: '', price: '', currency: 'USD', durationInDays: 30, maxUsers: '', storageGB: '', regionId: '', isActive: true };
 
 export default function SubscriptionPlans() {
   const [plans, setPlans] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -25,7 +27,13 @@ export default function SubscriptionPlans() {
 
   const load = () => {
     setLoading(true);
-    plansApi.list().then((res) => setPlans(res.data?.data || [])).finally(() => setLoading(false));
+    Promise.all([
+      plansApi.list(),
+      regionsApi.list({ globalOnly: true })
+    ]).then(([resPlans, resRegions]) => {
+      setPlans(resPlans.data?.data || []);
+      setRegions(resRegions.data?.data || []);
+    }).finally(() => setLoading(false));
   };
 
   useEffect(load, []);
@@ -37,7 +45,7 @@ export default function SubscriptionPlans() {
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const payload = { ...form, price: Number(form.price), durationInDays: Number(form.durationInDays) || 30, maxUsers: Number(form.maxUsers) || undefined, storageGB: Number(form.storageGB) || undefined };
+    const payload = { ...form, price: Number(form.price), durationInDays: Number(form.durationInDays) || 30, maxUsers: Number(form.maxUsers) || undefined, storageGB: Number(form.storageGB) || undefined, regionId: form.regionId || null };
     try {
       if (editing) {
         await plansApi.update(editing._id || editing.id, payload);
@@ -96,6 +104,7 @@ export default function SubscriptionPlans() {
               </p>
               <div className="text-muted" style={{ fontSize: 'var(--fs-xs)', marginBottom: 'var(--sp-4)' }}>
                 {p.maxUsers ? `${p.maxUsers} users` : 'Unlimited users'} · {p.storageGB ? `${p.storageGB}GB storage` : '—'}
+                {p.regionId && <div style={{ marginTop: 4 }}>Region: {regions.find(r => r.id === p.regionId || r._id === p.regionId)?.name || 'Unknown'}</div>}
               </div>
               <div className="row">
                 <Button size="sm" variant="outline" icon={Pencil} onClick={() => openEdit(p)}>Edit</Button>
@@ -112,6 +121,14 @@ export default function SubscriptionPlans() {
             <Field label="Plan Name" required><Input value={form.name} onChange={update('name')} required /></Field>
             <Field label="Code" required><Input value={form.code} onChange={update('code')} required /></Field>
           </div>
+          <Field label="Global Region">
+            <Select value={form.regionId || ''} onChange={update('regionId')}>
+              <option value="">No specific region (Global)</option>
+              {regions.map(r => (
+                <option key={r.id || r._id} value={r.id || r._id}>{r.name}</option>
+              ))}
+            </Select>
+          </Field>
           <div className="form-grid">
             <Field label="Price" required><Input type="number" value={form.price} onChange={update('price')} required /></Field>
             <Field label="Currency"><Input value={form.currency} onChange={update('currency')} /></Field>

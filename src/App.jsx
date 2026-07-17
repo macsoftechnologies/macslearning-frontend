@@ -8,6 +8,7 @@ import PageLoader from './components/ui/PageLoader';
 import Login from './pages/auth/Login';
 import SuperAdminLogin from './pages/auth/SuperAdminLogin';
 import Register from './pages/auth/Register';
+import RegisterOrganization from './pages/auth/RegisterOrganization';
 import { Unauthorized, NotFound } from './pages/shared/StatusPages';
 
 // Super Admin
@@ -15,6 +16,7 @@ import SuperAdminDashboard from './pages/super-admin/Dashboard';
 import Organizations from './pages/super-admin/Organizations';
 import OrganizationDetail from './pages/super-admin/OrganizationDetail';
 import SubscriptionPlans from './pages/super-admin/SubscriptionPlans';
+import GlobalRegions from './pages/super-admin/GlobalRegions';
 import AuditLogs from './pages/super-admin/AuditLogs';
 import SuperAdminTeam from './pages/super-admin/Team';
 import GlobalPayments from './pages/super-admin/Payments';
@@ -113,6 +115,7 @@ export default function App() {
         />
         <Routes>
           <Route path="/" element={<RootRedirect />} />
+          <Route path="/register-organization" element={<RegisterOrganization />} />
           <Route path="/login" element={<AuthRedirect />} />
           <Route path="/:slug/login" element={<Login />} />
           <Route path="/super-admin/login" element={<SuperAdminLogin />} />
@@ -131,6 +134,7 @@ export default function App() {
             <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
             <Route path="/super-admin/organizations" element={<PermissionGuard allowedPermissions={['TRACK_ORGANIZATIONS']}><Organizations /></PermissionGuard>} />
             <Route path="/super-admin/organizations/:id" element={<PermissionGuard allowedPermissions={['TRACK_ORGANIZATIONS']}><OrganizationDetail /></PermissionGuard>} />
+            <Route path="/super-admin/regions" element={<PermissionGuard allowedPermissions={['TRACK_ORGANIZATIONS']}><GlobalRegions /></PermissionGuard>} />
             <Route path="/super-admin/subscription-plans" element={<PermissionGuard allowedPermissions={['TRACK_ORGANIZATIONS', 'TRACK_FINANCE']}><SubscriptionPlans /></PermissionGuard>} />
             <Route path="/super-admin/audit-logs" element={<PermissionGuard allowedPermissions={['TRACK_USERS', 'TRACK_ORGANIZATIONS']}><AuditLogs /></PermissionGuard>} />
             <Route path="/super-admin/team" element={<PermissionGuard allowedPermissions={['MANAGE_ROLES']}><SuperAdminTeam /></PermissionGuard>} />

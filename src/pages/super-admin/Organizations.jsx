@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Plus, Eye, Power, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { Plus, Eye, Power, Download, CheckCircle } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import usePagination from '../../hooks/usePagination';
 import useDebounce from '../../hooks/useDebounce';
@@ -14,17 +14,21 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import CreateOrganizationModal from './CreateOrganizationModal';
+import ApproveOrganizationModal from './ApproveOrganizationModal';
 
 export default function Organizations() {
+  const [searchParams] = useSearchParams();
+  const filter = searchParams.get('filter');
+  
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('ALL');
   const [modalOpen, setModalOpen] = useState(false);
   const [toggleTarget, setToggleTarget] = useState(null);
+  const [approveTarget, setApproveTarget] = useState(null);
   const debouncedSearch = useDebounce(search, 500);
   
   const { items, page, setPage, meta, loading, refresh } = usePagination(
     organizationsApi.list,
-    { search: debouncedSearch, filter: activeTab === 'EXPIRING' ? 'expiring' : undefined }
+    { search: debouncedSearch, filter }
   );
 
   const toggleStatus = async () => {
@@ -45,7 +49,9 @@ export default function Organizations() {
       <div className="page-head">
         <div>
           <span className="page-eyebrow">Super admin</span>
-          <h1 className="page-title">Organizations</h1>
+          <h1 className="page-title">
+            {filter === 'pending' ? 'Pending Approvals' : filter === 'expiring' ? 'Expired / Expiring Organizations' : 'Organizations'}
+          </h1>
           <p className="page-subtitle">Every institution running on  LMS.</p>
         </div>
         <div className="page-actions">
@@ -58,23 +64,7 @@ export default function Organizations() {
         </div>
       </div>
 
-      <div className="row" style={{ marginBottom: 'var(--sp-4)', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div className="tabs" style={{ display: 'flex', gap: '8px' }}>
-          <Button 
-            variant={activeTab === 'ALL' ? 'primary' : 'ghost'} 
-            size="sm" 
-            onClick={() => { setActiveTab('ALL'); setPage(1); }}
-          >
-            All Organizations
-          </Button>
-          <Button 
-            variant={activeTab === 'EXPIRING' ? 'primary' : 'ghost'} 
-            size="sm" 
-            onClick={() => { setActiveTab('EXPIRING'); setPage(1); }}
-          >
-            Expiring / Expired
-          </Button>
-        </div>
+      <div className="row" style={{ marginBottom: 'var(--sp-4)', justifyContent: 'flex-end', alignItems: 'center' }}>
         <SearchBar value={search} onChange={setSearch} placeholder="Search organizations…" />
       </div>
 
@@ -123,9 +113,15 @@ export default function Organizations() {
                 <Link to={`/super-admin/organizations/${r._id || r.id}`} state={{ org: r }}>
                   <Button size="sm" variant="ghost" icon={Eye}>View</Button>
                 </Link>
-                <Button size="sm" variant="outline" icon={Power} onClick={() => setToggleTarget(r)}>
-                  {r.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                </Button>
+                {filter === 'pending' && r.status === 'INACTIVE' ? (
+                  <Button size="sm" variant="primary" icon={CheckCircle} onClick={() => setApproveTarget(r)}>
+                    Approve
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" icon={Power} onClick={() => setToggleTarget(r)}>
+                    {r.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                  </Button>
+                )}
               </div>
             ),
           },
@@ -140,6 +136,16 @@ export default function Organizations() {
         onClose={() => setModalOpen(false)}
         onCreated={() => {
           setModalOpen(false);
+          refresh();
+        }}
+      />
+
+      <ApproveOrganizationModal
+        open={!!approveTarget}
+        org={approveTarget}
+        onClose={() => setApproveTarget(null)}
+        onApproved={() => {
+          setApproveTarget(null);
           refresh();
         }}
       />

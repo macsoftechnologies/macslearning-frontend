@@ -5,11 +5,12 @@ import Input, { Field, Textarea, Select } from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import * as organizationsApi from '../../api/organizations';
 import * as plansApi from '../../api/subscriptionPlans';
+import * as regionsApi from '../../api/regions';
 import { extractErrorMessages } from '../../api/client';
 
 const initial = {
   name: '', code: '', contactEmail: '', contactPhone: '', address: '',
-  subscriptionPlanId: '',
+  regionId: '', subscriptionPlanId: '',
   paymentStatus: 'PENDING', lastPaymentDate: '', paymentReferenceId: '', receiptUrl: '',
   adminFullName: '', adminEmail: '', adminPassword: '', adminMobile: '',
 };
@@ -17,12 +18,19 @@ const initial = {
 export default function CreateOrganizationModal({ open, onClose, onCreated }) {
   const [form, setForm] = useState(initial);
   const [plans, setPlans] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
   useEffect(() => {
     if (open) {
-      plansApi.list().then((res) => setPlans(res.data?.data || [])).catch(() => {});
+      Promise.all([
+        plansApi.list(),
+        regionsApi.list({ globalOnly: true })
+      ]).then(([resPlans, resRegions]) => {
+        setPlans(resPlans.data?.data || []);
+        setRegions(resRegions.data?.data || []);
+      }).catch(() => {});
       setForm(initial);
       setStep(1);
     }
@@ -83,12 +91,18 @@ export default function CreateOrganizationModal({ open, onClose, onCreated }) {
             <Textarea value={form.address} onChange={update('address')} rows={2} />
           </Field>
 
-          <p className="section-title" style={{ fontSize: 'var(--fs-sm)', marginBottom: 0, marginTop: 4 }}>Subscription</p>
+          <p className="section-title" style={{ fontSize: 'var(--fs-sm)', marginBottom: 0, marginTop: 4 }}>Subscription & Region</p>
           <div className="form-grid">
-            <Field label="Plan">
-              <Select value={form.subscriptionPlanId} onChange={update('subscriptionPlanId')} required>
+            <Field label="Global Region" required>
+              <Select value={form.regionId} onChange={update('regionId')} required>
+                <option value="">Select a region</option>
+                {regions.map(r => <option key={r.id || r._id} value={r.id || r._id}>{r.name}</option>)}
+              </Select>
+            </Field>
+            <Field label="Plan" required>
+              <Select value={form.subscriptionPlanId} onChange={update('subscriptionPlanId')} required disabled={!form.regionId}>
                 <option value="">Select a plan</option>
-                {plans.map((p) => <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>)}
+                {plans.filter(p => !p.regionId || p.regionId === form.regionId).map((p) => <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>)}
               </Select>
             </Field>
           </div>

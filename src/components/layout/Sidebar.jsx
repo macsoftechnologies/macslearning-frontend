@@ -1,9 +1,10 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { NAV, ROLE_LABEL } from './navConfig';
 import { BookMarked } from 'lucide-react';
 import './Sidebar.css';
 
 export default function Sidebar({ role, user, open, onNavigate }) {
+  const location = useLocation();
   const allItems = NAV[role] || [];
   
   const items = allItems.filter(item => {
@@ -36,17 +37,21 @@ export default function Sidebar({ role, user, open, onNavigate }) {
       </div>
 
       <nav className="sidebar__nav">
-        {items.map((item) => (
+        {items.map((item) => {
+          const [path, search] = item.to.split('?');
+          const isActive = location.pathname === path && (search ? location.search.includes(search) : !location.search || !location.search.includes('filter'));
+          return (
           <NavLink
             key={item.to}
             to={item.to}
             onClick={onNavigate}
-            className={({ isActive }) => `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`}
+            className={`sidebar__link ${isActive ? 'sidebar__link--active' : ''}`}
           >
             <item.icon size={17} strokeWidth={2} />
             <span>{item.label}</span>
           </NavLink>
-        ))}
+          );
+        })}
       </nav>
 
       <div className="sidebar__footer">

@@ -6,10 +6,13 @@ import {
 
 export const NAV = {
   SUPER_ADMIN: [
-    { to: '/super-admin/dashboard', label: 'Dashboard', icon: LayoutDashboard }, // Always visible?
+    { to: '/super-admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/super-admin/organizations', label: 'Organizations', icon: Building2, requiredPermissions: ['TRACK_ORGANIZATIONS'] },
+    { to: '/super-admin/organizations?filter=pending', label: 'Pending Approvals', icon: ClipboardList, requiredPermissions: ['TRACK_ORGANIZATIONS'] },
+    { to: '/super-admin/organizations?filter=expiring', label: 'Expired/Expiring', icon: ScrollText, requiredPermissions: ['TRACK_ORGANIZATIONS'] },
+    { to: '/super-admin/regions', label: 'Global Regions', icon: Compass, requiredPermissions: ['TRACK_ORGANIZATIONS'] },
     { to: '/super-admin/subscription-plans', label: 'Subscription Plans', icon: CreditCard, requiredPermissions: ['TRACK_ORGANIZATIONS'] },
-    { to: '/super-admin/audit-logs', label: 'Audit Logs', icon: ScrollText }, // Maybe always visible or add a permission later
+    { to: '/super-admin/audit-logs', label: 'Audit Logs', icon: ScrollText },
     { to: '/super-admin/payments', label: 'Payments', icon: Wallet, requiredPermissions: ['TRACK_FINANCE'] },
     { to: '/super-admin/users', label: 'All Users', icon: Users, requiredPermissions: ['TRACK_USERS'] },
     { to: '/super-admin/students', label: 'Students', icon: GraduationCap, requiredPermissions: ['TRACK_STUDENTS'] },
