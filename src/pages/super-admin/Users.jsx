@@ -8,7 +8,7 @@ import usePagination from '../../hooks/usePagination';
 import useDebounce from '../../hooks/useDebounce';
 import * as usersApi from '../../api/users';
 import * as organizationsApi from '../../api/organizations';
-import { downloadCSV, exportToCSV } from '../../utils/export';
+import { exportToCSV } from '../../utils/export';
 
 export default function GlobalUsers() {
   const [search, setSearch] = useState('');
