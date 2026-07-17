@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
