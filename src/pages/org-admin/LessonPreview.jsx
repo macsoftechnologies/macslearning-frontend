@@ -28,14 +28,13 @@ const isDocument = (url) => {
 };
 
 export default function LessonPreview() {
-  const { pathname } = useParams();
   const { id } = useParams();
   const location = useLocation();
   const [previewContentUrl, setPreviewContentUrl] = useState(null);
   
   // Use state if we navigated from CourseDetail, otherwise would need to fetch (skipped for now)
   const lesson = location.state?.lesson;
-  const base = pathname?.startsWith('/faculty') ? '/faculty' : '/admin';
+  const base = location.pathname.startsWith('/faculty') ? '/faculty' : '/admin';
 
   if (!lesson) {
     return (
@@ -106,16 +105,17 @@ export default function LessonPreview() {
         )}
       </div>
       <Modal open={!!previewContentUrl} onClose={() => setPreviewContentUrl(null)} title="View Attachment" width={800}>
-        <div style={{ height: '70vh', width: '100%' }}>
+        <div style={{ height: '70vh', background: '#f8fafc', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
           {previewContentUrl && (
-            <iframe
-              src={isDocument(previewContentUrl) ? (
-                previewContentUrl.toLowerCase().endsWith('.pdf') ? buildStaticUrl(previewContentUrl) :
-                (buildStaticUrl(previewContentUrl).includes('localhost') ? buildStaticUrl(previewContentUrl) : `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(buildStaticUrl(previewContentUrl))}`)
-              ) : buildStaticUrl(previewContentUrl)}
-              title="Attachment Preview"
-              style={{ width: '100%', height: '100%', border: 'none' }}
-            />
+            previewContentUrl.match(/\.(jpe?g|png|gif|svg)$/i) ? (
+              <img src={buildStaticUrl(previewContentUrl)} alt="Attachment" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            ) : (
+              <iframe
+                src={buildStaticUrl(previewContentUrl)}
+                title="Attachment Preview"
+                style={{ width: '100%', height: '100%', border: 'none' }}
+              />
+            )
           )}
         </div>
       </Modal>

@@ -460,16 +460,16 @@ export default function CoursePlayer() {
 
             {activeLesson.type === 'DOCUMENT' && activeLesson.documentUrl && (
               <div style={{ marginBottom: 'var(--sp-6)', borderRadius: '8px', overflow: 'hidden', height: '75vh', border: '1px solid var(--border-subtle)' }}>
-                <iframe 
-                  title="lesson-doc" 
-                  src={
-                    activeLesson.documentUrl.toLowerCase().endsWith('.pdf') || activeLesson.documentUrl.match(/\.(jpe?g|png|gif|svg)$/i)
-                      ? buildStaticUrl(activeLesson.documentUrl)
-                      : `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(buildStaticUrl(activeLesson.documentUrl))}`
-                  } 
-                  className="player__pdf" 
-                  style={{ width: '100%', height: '100%', border: 'none' }}
-                />
+                {activeLesson.documentUrl.match(/\.(jpe?g|png|gif|svg)$/i) ? (
+                  <img src={buildStaticUrl(activeLesson.documentUrl)} alt="Lesson Document" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                ) : (
+                  <iframe 
+                    title="lesson-doc" 
+                    src={buildStaticUrl(activeLesson.documentUrl)} 
+                    className="player__pdf" 
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                  />
+                )}
               </div>
             )}
 
@@ -547,13 +547,10 @@ export default function CoursePlayer() {
       <Modal open={!!previewContentUrl} onClose={() => setPreviewContentUrl(null)} title="View Attachment" width={800}>
         <div style={{ height: '70vh', width: '100%' }}>
           {previewContentUrl && (
-            <iframe
-              src={isDocument(previewContentUrl) ? (
-                previewContentUrl.toLowerCase().endsWith('.pdf') ? buildStaticUrl(previewContentUrl) :
-                (buildStaticUrl(previewContentUrl).includes('localhost') ? buildStaticUrl(previewContentUrl) : `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(buildStaticUrl(previewContentUrl))}`)
-              ) : buildStaticUrl(previewContentUrl)}
-              title="Attachment Preview"
-              style={{ width: '100%', height: '100%', border: 'none' }}
+            <iframe 
+              src={buildStaticUrl(previewContentUrl)} 
+              title="Document Preview" 
+              style={{ width: '100%', height: '70vh', border: 'none', borderRadius: '8px', background: '#f8fafc' }}
             />
           )}
         </div>

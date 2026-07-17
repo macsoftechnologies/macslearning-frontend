@@ -11,11 +11,7 @@ export const buildStaticUrl = (path) => {
   
   let normalizedPath = path.startsWith('/') ? path.substring(1) : path;
   if (normalizedPath.startsWith('uploads/')) {
-    if (STATIC_BASE_URL.includes('launchpaad.tech')) {
-      normalizedPath = 'public/' + normalizedPath;
-    } else {
-      normalizedPath = normalizedPath;
-    }
+    normalizedPath = normalizedPath;
   }
 
   return `${STATIC_BASE_URL}/${normalizedPath}`;

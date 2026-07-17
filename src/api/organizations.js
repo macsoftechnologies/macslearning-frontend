@@ -7,6 +7,7 @@ export const create = (data) => client.post('/organizations', data);
 export const updateStatus = (id, status) => client.patch(`/organizations/${id}/status`, { status });
 export const getMe = () => client.get('/organizations/me');
 export const updateMe = (data) => client.patch('/organizations/me', data);
+export const update = (id, data) => client.patch(`/organizations/${id}`, data);
 
 export const getCoursePlans = () => client.get('/organizations/me/course-plans');
 export const createCoursePlan = (data) => client.post('/organizations/me/course-plans', data);
