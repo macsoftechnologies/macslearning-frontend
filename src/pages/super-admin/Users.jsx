@@ -7,7 +7,7 @@ import Input from '../../components/ui/Input';
 import usePagination from '../../hooks/usePagination';
 import useDebounce from '../../hooks/useDebounce';
 import * as usersApi from '../../api/users';
-import { downloadCSV } from '../../utils/export';
+import { exportToCSV } from '../../utils/export';
 
 export default function GlobalUsers() {
   const [search, setSearch] = useState('');
@@ -27,7 +27,7 @@ export default function GlobalUsers() {
       'Organization ID': u.organizationId || 'Root',
       'Created': new Date(u.createdAt).toLocaleDateString()
     }));
-    downloadCSV(data, 'global_users');
+    exportToCSV(data, 'global_users');
   };
 
   return (

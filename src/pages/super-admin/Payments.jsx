@@ -7,7 +7,7 @@ import Input from '../../components/ui/Input';
 import usePagination from '../../hooks/usePagination';
 import useDebounce from '../../hooks/useDebounce';
 import * as paymentsApi from '../../api/payments';
-import { downloadCSV } from '../../utils/export';
+import { exportToCSV } from '../../utils/export';
 
 export default function GlobalPayments() {
   const [search, setSearch] = useState('');
@@ -28,7 +28,7 @@ export default function GlobalPayments() {
       'Status': i.status,
       'Date': new Date(i.createdAt).toLocaleDateString()
     }));
-    downloadCSV(data, 'global_payments');
+    exportToCSV(data, 'global_payments');
   };
 
   return (
