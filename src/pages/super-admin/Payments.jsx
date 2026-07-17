@@ -28,7 +28,8 @@ export default function GlobalPayments() {
         'Plan': sub.planType || 'N/A',
         'Amount': sub.price ? `${sub.currency || 'USD'} ${sub.price}` : 'N/A',
         'Status': sub.paymentStatus || 'PENDING',
-        'Date': sub.lastPaymentDate ? new Date(sub.lastPaymentDate).toLocaleDateString() : 'N/A'
+        'Date Paid': sub.lastPaymentDate ? new Date(sub.lastPaymentDate).toLocaleDateString() : 'N/A',
+        'Expires At': sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString() : 'N/A'
       };
     });
     exportToCSV(data, 'organization_payments');
@@ -67,7 +68,8 @@ export default function GlobalPayments() {
                 return price ? <strong>{r.subscriptionConfig?.currency || 'USD'} {price}</strong> : '—';
             } },
             { key: 'status', header: 'Status', render: r => <StatusBadge status={r.subscriptionConfig?.paymentStatus || 'PENDING'} /> },
-            { key: 'date', header: 'Date', render: r => r.subscriptionConfig?.lastPaymentDate ? new Date(r.subscriptionConfig.lastPaymentDate).toLocaleDateString() : '—' }
+            { key: 'date', header: 'Date Paid', render: r => r.subscriptionConfig?.lastPaymentDate ? new Date(r.subscriptionConfig.lastPaymentDate).toLocaleDateString() : '—' },
+            { key: 'expires', header: 'Expires At', render: r => r.subscriptionConfig?.expiresAt ? new Date(r.subscriptionConfig.expiresAt).toLocaleDateString() : '—' }
           ]}
           rows={items}
           loading={loading}

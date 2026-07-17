@@ -87,9 +87,7 @@ export default function SuperAdminDashboard() {
 
       <div className="grid-stats">
         <StatCard label="Total Organizations" value={stats?.totalOrganizations || 0} icon={Building2} tone="ink" />
-        <StatCard label="Total Users" value={stats?.totalUsers || 0} icon={GraduationCap} tone="brand" />
-        <StatCard label="Total Courses" value={stats?.totalCourses || 0} icon={BookOpen} tone="sky" />
-        <StatCard label="Total Revenue" value={`$${(stats?.totalRevenue || 0).toLocaleString()}`} icon={CheckCircle2} tone="sage" />
+        <StatCard label="Total SaaS Revenue" value={`$${(stats?.totalRevenue || 0).toLocaleString()}`} icon={CheckCircle2} tone="sage" />
       </div>
 
       {canSeeOrganizations && (
