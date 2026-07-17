@@ -8,6 +8,7 @@ export const updateStatus = (id, status) => client.patch(`/organizations/${id}/s
 export const getMe = () => client.get('/organizations/me');
 export const updateMe = (data) => client.patch('/organizations/me', data);
 export const update = (id, data) => client.patch(`/organizations/${id}`, data);
+export const extendSubscription = (id, data) => client.post(`/organizations/${id}/extend-subscription`, data);
 
 export const getCoursePlans = () => client.get('/organizations/me/course-plans');
 export const createCoursePlan = (data) => client.post('/organizations/me/course-plans', data);

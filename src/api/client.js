@@ -39,8 +39,24 @@ client.interceptors.response.use(
     const original = err.config;
     const status = err.response?.status;
 
-    if (status === 401 && !original?._retry && getRefreshToken()) {
-      if (isRefreshing) {
+    if (status === 401) {
+      const msg = err.response?.data?.message;
+      if (msg === 'Organization subscription has expired' || msg === 'Please contact your Organization Administrator to restore access') {
+        clearTokens();
+        
+        const displayMessage = msg === 'Organization subscription has expired' 
+          ? "Your organization's subscription has expired. Please contact your administrator." 
+          : "Access suspended. Please contact your Organization Administrator to restore access.";
+          
+        toast.error(displayMessage, { duration: 6000, id: 'sub-expired' });
+        if (!window.location.pathname.includes('login')) {
+          window.location.href = '/macslearnfrontend/login';
+        }
+        return Promise.reject(err);
+      }
+      
+      if (!original?._retry && getRefreshToken()) {
+        if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         }).then((token) => {

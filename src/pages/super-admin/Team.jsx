@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Mail, Phone, MoreVertical, Shield, Edit, Power } from 'lucide-react';
+import { Plus, Search, Mail, Phone, MoreVertical, Shield, Edit, Power, Download } from 'lucide-react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -11,6 +11,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Pagination from '../../components/ui/Pagination';
 import PageLoader from '../../components/ui/PageLoader';
 import { useAuth } from '../../contexts/AuthContext';
+import { exportToCSV } from '../../utils/export';
 import './Team.css';
 
 const PERMISSIONS_LIST = [
@@ -137,19 +138,24 @@ export default function SuperAdminTeam() {
           <p className="page-subtitle">Manage your global team members and their access permissions.</p>
         </div>
         <div className="page-actions">
-          <Button icon={Plus} onClick={() => {
-            setEditId(null);
-            setFormData({
-              fullName: '',
-              email: '',
-              password: '',
-              mobile: '',
-              modulePermissions: [],
-            });
-            setIsModalOpen(true);
-          }}>
-            Add Team Member
+          <Button variant="outline" icon={Download} onClick={() => exportToCSV(team, 'SuperAdminTeam')}>
+            Export CSV
           </Button>
+          {(!user.permissions || user.permissions.length === 0 || user.permissions.includes('MANAGE_ROLES')) && (
+            <Button icon={Plus} onClick={() => {
+              setEditId(null);
+              setFormData({
+                fullName: '',
+                email: '',
+                password: '',
+                mobile: '',
+                modulePermissions: [],
+              });
+              setIsModalOpen(true);
+            }}>
+              Add Team Member
+            </Button>
+          )}
         </div>
       </div>
 
@@ -218,14 +224,19 @@ export default function SuperAdminTeam() {
             {
               key: 'actions',
               header: 'Actions',
-              render: (m) => (
-                <div className="row" style={{ gap: 6 }}>
-                  <Button size="sm" variant="ghost" icon={Edit} onClick={() => handleEdit(m)}>Edit</Button>
-                  <Button size="sm" variant="outline" icon={Power} onClick={() => handleToggleStatus(m)}>
-                    {m.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                  </Button>
-                </div>
-              ),
+              render: (m) => {
+                const canManageRoles = !user.permissions || user.permissions.length === 0 || user.permissions.includes('MANAGE_ROLES');
+                if (!canManageRoles) return <span className="text-muted" style={{ fontSize: '12px' }}>Read Only</span>;
+                
+                return (
+                  <div className="row" style={{ gap: 6 }}>
+                    <Button size="sm" variant="ghost" icon={Edit} onClick={() => handleEdit(m)}>Edit</Button>
+                    <Button size="sm" variant="outline" icon={Power} onClick={() => handleToggleStatus(m)}>
+                      {m.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                    </Button>
+                  </div>
+                );
+              },
             },
           ]}
           rows={team}

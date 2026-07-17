@@ -9,7 +9,12 @@ import PageLoader from '../../components/ui/PageLoader';
 import * as organizationsApi from '../../api/organizations';
 import * as plansApi from '../../api/subscriptionPlans';
 import * as reportsApi from '../../api/reports';
+import * as notificationsApi from '../../api/notifications';
 import { useAuth } from '../../contexts/AuthContext';
+import Button from '../../components/ui/Button';
+import Modal from '../../components/ui/Modal';
+import Input, { Field, Textarea } from '../../components/ui/Input';
+import toast from 'react-hot-toast';
 
 export default function SuperAdminDashboard() {
   const { user } = useAuth();
@@ -17,6 +22,9 @@ export default function SuperAdminDashboard() {
   const [orgs, setOrgs] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [broadcastModalOpen, setBroadcastModalOpen] = useState(false);
+  const [broadcastForm, setBroadcastForm] = useState({ title: '', message: '' });
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
 
   const hasAccess = (perms) => {
     if (!user.permissions || user.permissions.length === 0) return true; // Root Admin
@@ -49,13 +57,31 @@ export default function SuperAdminDashboard() {
 
   if (loading) return <PageLoader />;
 
+  const handleBroadcast = async (e) => {
+    e.preventDefault();
+    setSendingBroadcast(true);
+    try {
+      const res = await notificationsApi.broadcast(broadcastForm);
+      toast.success(`Broadcast sent successfully to ${res.data?.count || 0} users!`);
+      setBroadcastModalOpen(false);
+      setBroadcastForm({ title: '', message: '' });
+    } catch (err) {
+      toast.error('Failed to send broadcast');
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
+
   return (
     <div className="page">
       <div className="page-head">
         <div>
           <span className="page-eyebrow">Overview</span>
           <h1 className="page-title">Platform Dashboard</h1>
-          <p className="page-subtitle">A bird's-eye view of every organization on  LMS.</p>
+          <p className="page-subtitle">A bird's-eye view of every organization on LMS.</p>
+        </div>
+        <div className="page-actions">
+          <Button onClick={() => setBroadcastModalOpen(true)}>Send Global Broadcast</Button>
         </div>
       </div>
 
@@ -106,6 +132,32 @@ export default function SuperAdminDashboard() {
           </section>
         </div>
       )}
+
+      <Modal open={broadcastModalOpen} onClose={() => setBroadcastModalOpen(false)} title="Send Global Broadcast" subtitle="This will send an in-app notification to ALL active users across ALL organizations.">
+        <form onSubmit={handleBroadcast} className="stack">
+          <Field label="Notification Title" required>
+            <Input 
+              value={broadcastForm.title} 
+              onChange={e => setBroadcastForm({ ...broadcastForm, title: e.target.value })} 
+              placeholder="e.g. Scheduled System Maintenance" 
+              required 
+            />
+          </Field>
+          <Field label="Message" required>
+            <Textarea 
+              rows={4}
+              value={broadcastForm.message} 
+              onChange={e => setBroadcastForm({ ...broadcastForm, message: e.target.value })} 
+              placeholder="Enter the broadcast message..." 
+              required 
+            />
+          </Field>
+          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 'var(--sp-4)' }}>
+            <Button type="button" variant="ghost" onClick={() => setBroadcastModalOpen(false)}>Cancel</Button>
+            <Button type="submit" loading={sendingBroadcast}>Send Broadcast</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

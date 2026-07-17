@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Plus, Eye, Power } from 'lucide-react';
+import { Plus, Eye, Power, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import usePagination from '../../hooks/usePagination';
 import useDebounce from '../../hooks/useDebounce';
 import * as organizationsApi from '../../api/organizations';
 import { extractErrorMessages } from '../../api/client';
+import { exportToCSV } from '../../utils/export';
 import DataTable from '../../components/ui/DataTable';
 import Pagination from '../../components/ui/Pagination';
 import SearchBar from '../../components/ui/SearchBar';
@@ -16,12 +17,12 @@ import CreateOrganizationModal from './CreateOrganizationModal';
 
 export default function Organizations() {
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search);
+  const [activeTab, setActiveTab] = useState('ALL');
   const [modalOpen, setModalOpen] = useState(false);
   const [toggleTarget, setToggleTarget] = useState(null);
   const { items, page, setPage, meta, loading, refresh } = usePagination(
     organizationsApi.list,
-    { search: debouncedSearch }
+    { search: debouncedSearch, filter: activeTab === 'EXPIRING' ? 'expiring' : undefined }
   );
 
   const toggleStatus = async () => {
@@ -45,12 +46,33 @@ export default function Organizations() {
           <h1 className="page-title">Organizations</h1>
           <p className="page-subtitle">Every institution running on  LMS.</p>
         </div>
-        <Button icon={Plus} onClick={() => setModalOpen(true)}>
-          Create Organization
-        </Button>
+        <div className="page-actions">
+          <Button variant="outline" icon={Download} onClick={() => exportToCSV(items, 'Organizations')}>
+            Export CSV
+          </Button>
+          <Button icon={Plus} onClick={() => setModalOpen(true)}>
+            Create Organization
+          </Button>
+        </div>
       </div>
 
-      <div className="row" style={{ marginBottom: 'var(--sp-4)' }}>
+      <div className="row" style={{ marginBottom: 'var(--sp-4)', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="tabs" style={{ display: 'flex', gap: '8px' }}>
+          <Button 
+            variant={activeTab === 'ALL' ? 'primary' : 'ghost'} 
+            size="sm" 
+            onClick={() => { setActiveTab('ALL'); setPage(1); }}
+          >
+            All Organizations
+          </Button>
+          <Button 
+            variant={activeTab === 'EXPIRING' ? 'primary' : 'ghost'} 
+            size="sm" 
+            onClick={() => { setActiveTab('EXPIRING'); setPage(1); }}
+          >
+            Expiring / Expired
+          </Button>
+        </div>
         <SearchBar value={search} onChange={setSearch} placeholder="Search organizations…" />
       </div>
 

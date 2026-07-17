@@ -24,6 +24,7 @@ export default function OrganizationDetail() {
   // Modals state
   const [editOrgOpen, setEditOrgOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
+  const [extendModalOpen, setExtendModalOpen] = useState(false);
   // adminModalOpen can be false, true (for 'add'), or a user object (for 'edit')
 
   const fetchUsers = () => {
@@ -128,13 +129,26 @@ export default function OrganizationDetail() {
           </div>
         </Card>
         <Card style={{ padding: 'var(--sp-5)' }}>
-          <p className="section-title">Subscription</p>
+          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <p className="section-title" style={{ margin: 0 }}>Subscription</p>
+            <Button size="sm" variant="outline" onClick={() => setExtendModalOpen(true)}>Renew / Extend Plan</Button>
+          </div>
           <div className="stack" style={{ gap: 8 }}>
             <Row label="Plan Type" value={org.subscriptionConfig?.planType || '—'} />
-            <Row label="Billing Cycle" value={org.subscriptionConfig?.billingCycle || '—'} />
             <Row label="Max Students" value={org.subscriptionConfig?.maxStudents ?? '—'} />
             <Row label="Max Storage" value={org.subscriptionConfig?.maxStorageGB ? `${org.subscriptionConfig.maxStorageGB} GB` : '—'} />
             <Row label="Expires At" value={org.subscriptionConfig?.expiresAt ? new Date(org.subscriptionConfig.expiresAt).toLocaleDateString() : '—'} />
+          </div>
+        </Card>
+        <Card style={{ padding: 'var(--sp-5)' }}>
+          <p className="section-title">Payment Info</p>
+          <div className="stack" style={{ gap: 8 }}>
+            <div className="row" style={{ justifyContent: 'space-between', fontSize: 'var(--fs-sm)' }}>
+              <span className="text-muted">Status</span>
+              <StatusBadge status={org.paymentStatus || 'PENDING'} />
+            </div>
+            <Row label="Last Payment" value={org.lastPaymentDate ? new Date(org.lastPaymentDate).toLocaleDateString() : '—'} />
+            <Row label="Transaction ID" value={org.paymentReferenceId || '—'} />
           </div>
         </Card>
       </div>
@@ -178,6 +192,13 @@ export default function OrganizationDetail() {
           fetchUsers();
         }}
       />
+
+      <ExtendSubscriptionModal 
+        open={extendModalOpen}
+        onClose={() => setExtendModalOpen(false)}
+        org={org}
+        onSaved={(updatedOrg) => setOrg(updatedOrg)}
+      />
     </div>
   );
 }
@@ -185,6 +206,17 @@ export default function OrganizationDetail() {
 function EditOrganizationModal({ open, onClose, org, onSaved }) {
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [plans, setPlans] = useState([]);
+  
+  // Import plansApi dynamically if not imported at top, or just use it since it's an api. 
+  // Let's assume we need to import it at the top of the file. Wait, I will use fetch to /api/v1/subscription-plans directly if needed, or import plansApi.
+  // Actually, I can import it at the top of the file. I'll just do it in a separate replace_file_content.
+  
+  useEffect(() => {
+    import('../../api/subscriptionPlans').then(api => {
+      api.list().then(res => setPlans(res.data?.data || [])).catch(() => {});
+    });
+  }, []);
 
   useEffect(() => {
     if (open && org) {
@@ -200,12 +232,34 @@ function EditOrganizationModal({ open, onClose, org, onSaved }) {
           maxStudents: org.subscriptionConfig?.maxStudents ?? 0,
           maxStorageGB: org.subscriptionConfig?.maxStorageGB ?? 0,
         },
+        paymentStatus: org.paymentStatus || 'PENDING',
+        lastPaymentDate: org.lastPaymentDate ? new Date(org.lastPaymentDate).toISOString().split('T')[0] : '',
+        paymentReferenceId: org.paymentReferenceId || '',
+        receiptUrl: org.receiptUrl || '',
       });
     }
   }, [open, org]);
 
   const update = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target?.value ?? e }));
   const updateContact = (k) => (e) => setForm((f) => ({ ...f, contactInfo: { ...f.contactInfo, [k]: e.target?.value ?? e } }));
+  
+  const handlePlanChange = (e) => {
+    const selectedCode = e.target.value;
+    const selectedPlan = plans.find(p => p.code === selectedCode);
+    
+    setForm(f => ({
+      ...f,
+      subscriptionConfig: {
+        ...f.subscriptionConfig,
+        planType: selectedCode,
+        ...(selectedPlan ? {
+          maxStudents: selectedPlan.maxUsers ?? 0,
+          maxStorageGB: selectedPlan.storageGB ?? 0,
+        } : {})
+      }
+    }));
+  };
+  
   const updateSub = (k) => (e) => setForm((f) => ({ ...f, subscriptionConfig: { ...f.subscriptionConfig, [k]: e.target?.value ?? e } }));
 
   const handleSubmit = async (e) => {
@@ -221,6 +275,9 @@ function EditOrganizationModal({ open, onClose, org, onSaved }) {
           maxStudents: Number(form.subscriptionConfig.maxStudents),
           maxStorageGB: Number(form.subscriptionConfig.maxStorageGB),
         },
+        paymentStatus: form.paymentStatus,
+        lastPaymentDate: form.lastPaymentDate || null,
+        paymentReferenceId: form.paymentReferenceId,
       };
       const res = await organizationsApi.update(org._id || org.id, payload);
       toast.success('Organization updated successfully');
@@ -254,7 +311,17 @@ function EditOrganizationModal({ open, onClose, org, onSaved }) {
 
         <h4 style={{ margin: 'var(--sp-4) 0 var(--sp-2) 0', fontSize: 'var(--fs-sm)' }}>Subscription Configuration</h4>
         <div className="form-grid">
-          <Field label="Plan Type"><Input value={form.subscriptionConfig.planType} onChange={updateSub('planType')} /></Field>
+          <Field label="Plan Type">
+            <Select value={form.subscriptionConfig.planType} onChange={handlePlanChange}>
+              <option value="">Select a plan</option>
+              {plans.map(p => (
+                <option key={p.id || p._id} value={p.code}>{p.name}</option>
+              ))}
+              {!plans.some(p => p.code === form.subscriptionConfig.planType) && form.subscriptionConfig.planType && (
+                <option value={form.subscriptionConfig.planType}>{form.subscriptionConfig.planType} (Custom)</option>
+              )}
+            </Select>
+          </Field>
           <Field label="Max Students (0 for unlimited)">
             <Input type="number" min="0" value={form.subscriptionConfig.maxStudents} onChange={updateSub('maxStudents')} />
           </Field>
@@ -262,6 +329,23 @@ function EditOrganizationModal({ open, onClose, org, onSaved }) {
             <Input type="number" min="0" value={form.subscriptionConfig.maxStorageGB} onChange={updateSub('maxStorageGB')} />
           </Field>
         </div>
+
+        <h4 style={{ margin: 'var(--sp-4) 0 var(--sp-2) 0', fontSize: 'var(--fs-sm)' }}>Payment Details (Manual)</h4>
+        <div className="form-grid">
+          <Field label="Payment Status">
+            <Select value={form.paymentStatus} onChange={update('paymentStatus')}>
+              <option value="PENDING">Pending</option>
+              <option value="PAID">Paid</option>
+              <option value="OVERDUE">Overdue</option>
+            </Select>
+          </Field>
+          <Field label="Payment Date">
+            <Input type="date" value={form.lastPaymentDate} onChange={update('lastPaymentDate')} />
+          </Field>
+        </div>
+        <Field label="Transaction ID / Check Number">
+          <Input value={form.paymentReferenceId} onChange={update('paymentReferenceId')} />
+        </Field>
 
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: 'var(--sp-6)' }}>
           <Button variant="ghost" type="button" onClick={onClose}>Cancel</Button>
@@ -336,6 +420,52 @@ function AdminUserModal({ open, onClose, user, orgId, onSaved }) {
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: 'var(--sp-6)' }}>
           <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
           <Button type="submit" loading={saving}>{user ? 'Save Changes' : 'Create Admin'}</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function ExtendSubscriptionModal({ open, onClose, org, onSaved }) {
+  const [paymentRef, setPaymentRef] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open) setPaymentRef('');
+  }, [open]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await organizationsApi.extendSubscription(org.id || org._id, {
+        paymentReferenceId: paymentRef
+      });
+      toast.success('Subscription extended successfully');
+      onSaved(res.data?.data || res.data);
+      onClose();
+    } catch (err) {
+      extractErrorMessages(err).forEach((m) => toast.error(m));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Renew / Extend Subscription" subtitle="Extend the current plan by its default duration.">
+      <form className="stack" onSubmit={submit}>
+        <div style={{ padding: '12px', background: 'var(--c-bg-subtle)', borderRadius: 'var(--r-md)', fontSize: '13px', marginBottom: 12 }}>
+          <strong>Current Plan:</strong> {org?.subscriptionConfig?.planType || '—'} <br />
+          <strong>Current Expiry:</strong> {org?.subscriptionConfig?.expiresAt ? new Date(org.subscriptionConfig.expiresAt).toLocaleDateString() : '—'}
+        </div>
+        
+        <Field label="Transaction ID / Invoice Reference" required>
+          <Input value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} placeholder="e.g. Wire Transfer ID" required />
+        </Field>
+        
+        <div className="row" style={{ justifyContent: 'flex-end', marginTop: 'var(--sp-6)' }}>
+          <Button variant="ghost" type="button" onClick={onClose}>Cancel</Button>
+          <Button type="submit" loading={saving}>Extend Plan</Button>
         </div>
       </form>
     </Modal>
