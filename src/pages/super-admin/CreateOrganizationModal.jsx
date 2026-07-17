@@ -150,15 +150,15 @@ export default function CreateOrganizationModal({ open, onClose, onCreated }) {
 
           <p className="section-title" style={{ fontSize: 'var(--fs-sm)', marginBottom: 0, marginTop: 12 }}>Payment Details (Manual)</p>
           <div className="form-grid">
-            <Field label="Payment Status / Terms">
-              <Select value={form.paymentStatus} onChange={update('paymentStatus')}>
+            <Field label="Payment Status / Terms" required>
+              <Select value={form.paymentStatus} onChange={update('paymentStatus')} required>
                 <option value="PENDING">Pending (Awaiting Payment)</option>
                 <option value="PAID">Paid (Upfront)</option>
                 <option value="OVERDUE">Overdue / Extension</option>
               </Select>
             </Field>
-            <Field label="Date Paid / Date Due">
-              <Input type="date" value={form.lastPaymentDate} onChange={update('lastPaymentDate')} />
+            <Field label="Date Paid / Date Due" required>
+              <Input type="date" value={form.lastPaymentDate} onChange={update('lastPaymentDate')} required />
             </Field>
           </div>
           <Field label="Transaction Reference or Invoice Note">
