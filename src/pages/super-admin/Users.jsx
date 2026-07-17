@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
@@ -7,15 +7,25 @@ import Input from '../../components/ui/Input';
 import usePagination from '../../hooks/usePagination';
 import useDebounce from '../../hooks/useDebounce';
 import * as usersApi from '../../api/users';
-import { exportToCSV } from '../../utils/export';
+import * as organizationsApi from '../../api/organizations';
+import { downloadCSV, exportToCSV } from '../../utils/export';
 
 export default function GlobalUsers() {
   const [search, setSearch] = useState('');
+  const [organizationId, setOrganizationId] = useState('');
+  const [organizations, setOrganizations] = useState([]);
   const debouncedSearch = useDebounce(search, 500);
+
+  useEffect(() => {
+    // Fetch organizations for the dropdown filter
+    organizationsApi.list({ limit: 1000 }).then((res) => {
+      setOrganizations(res.data.items || []);
+    }).catch(err => console.error("Failed to load organizations:", err));
+  }, []);
 
   const { items, page, setPage, meta, loading } = usePagination(
     usersApi.list,
-    { search: debouncedSearch } // userType is NOT passed so it fetches everyone
+    { search: debouncedSearch, organizationId }
   );
 
   const handleExport = () => {
@@ -24,7 +34,7 @@ export default function GlobalUsers() {
       'Email': u.email,
       'Role': u.userType,
       'Status': u.status,
-      'Organization ID': u.organizationId || 'Root',
+      'Organization': u.organizationName || 'N/A',
       'Created': new Date(u.createdAt).toLocaleDateString()
     }));
     exportToCSV(data, 'global_users');
@@ -44,13 +54,25 @@ export default function GlobalUsers() {
       </div>
 
       <div className="card">
-        <div className="filters">
+        <div className="filters" style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
           <Input
             placeholder="Search by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 300 }}
+            style={{ maxWidth: 300, flex: 1 }}
           />
+          
+          <select 
+            className="input" 
+            style={{ maxWidth: 200 }}
+            value={organizationId}
+            onChange={(e) => setOrganizationId(e.target.value)}
+          >
+            <option value="">All Organizations</option>
+            {organizations.map(org => (
+              <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+          </select>
         </div>
 
         <DataTable
@@ -70,7 +92,7 @@ export default function GlobalUsers() {
             },
             { key: 'userType', header: 'Role', render: r => <StatusBadge status={r.userType} /> },
             { key: 'status', header: 'Status', render: r => <StatusBadge status={r.status} /> },
-            { key: 'org', header: 'Organization', render: r => r.organizationId || <span className="text-muted">Root</span> },
+            { key: 'org', header: 'Organization', render: r => r.organizationName || <span className="text-muted">N/A</span> },
             { key: 'createdAt', header: 'Joined', render: r => new Date(r.createdAt).toLocaleDateString() }
           ]}
           rows={items}

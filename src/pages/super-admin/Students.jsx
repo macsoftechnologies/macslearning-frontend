@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
@@ -7,15 +7,24 @@ import Input from '../../components/ui/Input';
 import usePagination from '../../hooks/usePagination';
 import useDebounce from '../../hooks/useDebounce';
 import * as usersApi from '../../api/users';
+import * as organizationsApi from '../../api/organizations';
 import { exportToCSV } from '../../utils/export';
 
 export default function GlobalStudents() {
   const [search, setSearch] = useState('');
+  const [organizationId, setOrganizationId] = useState('');
+  const [organizations, setOrganizations] = useState([]);
   const debouncedSearch = useDebounce(search, 500);
+
+  useEffect(() => {
+    organizationsApi.list({ limit: 1000 }).then((res) => {
+      setOrganizations(res.data.items || []);
+    }).catch(err => console.error("Failed to load organizations:", err));
+  }, []);
 
   const { items, page, setPage, meta, loading } = usePagination(
     usersApi.list,
-    { search: debouncedSearch, userType: 'STUDENT' }
+    { search: debouncedSearch, userType: 'STUDENT', organizationId }
   );
 
   const handleExport = () => {
@@ -24,7 +33,7 @@ export default function GlobalStudents() {
       'Email': u.email,
       'Mobile': u.mobile || 'N/A',
       'Status': u.status,
-      'Organization ID': u.organizationId || 'Root',
+      'Organization': u.organizationName || 'N/A',
       'Created': new Date(u.createdAt).toLocaleDateString()
     }));
     exportToCSV(data, 'global_students');
@@ -44,13 +53,25 @@ export default function GlobalStudents() {
       </div>
 
       <div className="card">
-        <div className="filters">
+        <div className="filters" style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
           <Input
             placeholder="Search students..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 300 }}
+            style={{ maxWidth: 300, flex: 1 }}
           />
+          
+          <select 
+            className="input" 
+            style={{ maxWidth: 200 }}
+            value={organizationId}
+            onChange={(e) => setOrganizationId(e.target.value)}
+          >
+            <option value="">All Organizations</option>
+            {organizations.map(org => (
+              <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+          </select>
         </div>
 
         <DataTable
@@ -72,7 +93,7 @@ export default function GlobalStudents() {
             },
             { key: 'mobile', header: 'Mobile', render: r => r.mobile || '—' },
             { key: 'status', header: 'Status', render: r => <StatusBadge status={r.status} /> },
-            { key: 'org', header: 'Organization', render: r => r.organizationId || '—' },
+            { key: 'org', header: 'Organization', render: r => r.organizationName || <span className="text-muted">N/A</span> },
             { key: 'createdAt', header: 'Enrolled', render: r => new Date(r.createdAt).toLocaleDateString() }
           ]}
           rows={items}
