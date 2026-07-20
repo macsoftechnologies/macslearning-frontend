@@ -52,7 +52,7 @@ export default function CourseForm() {
     }
     organizationsApi.getCoursePlans().then(res => setCoursePlans(res.data?.data || [])).catch(() => {});
     certificatesApi.listTemplates().then(res => setTemplates(res.data?.data || [])).catch(() => {});
-    regionsApi.list().then(res => setRegions(res.data?.data || [])).catch(() => {});
+    regionsApi.list({ localOnly: true }).then(res => setRegions(res.data?.data || [])).catch(() => {});
     if (isEdit) {
       coursesApi.getById(id).then((res) => {
         const data = res.data?.data || {};

@@ -15,7 +15,7 @@ export default function CreateStudentModal({ open, onClose, onCreated, student =
 
   useEffect(() => {
     if (open) {
-      regionsApi.list().then(res => setRegions(res.data?.data || [])).catch(() => {});
+      regionsApi.list({ localOnly: true }).then(res => setRegions(res.data?.data || [])).catch(() => {});
       if (student) {
         setForm({
           fullName: student.fullName || '',

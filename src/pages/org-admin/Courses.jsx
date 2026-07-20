@@ -43,7 +43,8 @@ export default function Courses() {
       setFacultyMap(map);
     }).catch(() => {});
 
-    regionsApi.list().then((res) => {
+    regionsApi.list({ localOnly: true }).then((res) => {
+      setRegions(res.data?.data || []);
       const map = {};
       (res.data?.data || res.data || []).forEach((r) => { map[r._id || r.id] = r.name; });
       setRegionMap(map);

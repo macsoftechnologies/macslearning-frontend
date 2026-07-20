@@ -9,10 +9,8 @@ export const buildStaticUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
   
-  let normalizedPath = path.startsWith('/') ? path.substring(1) : path;
-  if (normalizedPath.startsWith('uploads/')) {
-    normalizedPath = normalizedPath;
-  }
+  const safePath = path.replace(/\\/g, '/');
+  let normalizedPath = safePath.startsWith('/') ? safePath.substring(1) : safePath;
 
   return `${STATIC_BASE_URL}/${normalizedPath}`;
 };

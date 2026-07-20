@@ -168,8 +168,8 @@ export default function CertificateTemplateBuilder() {
         .finally(() => setLoading(false));
     } else {
       setTemplateName('');
-      setBgType('IMAGE');
-      setBgUrl('/uploads/default_cert_bg.png');
+      setBgType('BLANK');
+      setBgUrl('');
       setFields([
         { 
           type: 'text', 
@@ -389,7 +389,7 @@ export default function CertificateTemplateBuilder() {
               width: `${A4_WIDTH}px`,
               height: `${A4_HEIGHT}px`,
               backgroundColor: bgType === 'BLANK' ? '#ffffff' : 'transparent',
-              backgroundImage: bgType === 'IMAGE' && bgUrl ? `url(${buildStaticUrl(bgUrl)})` : 'none',
+              backgroundImage: bgType === 'IMAGE' && bgUrl ? `url("${buildStaticUrl(bgUrl)}")` : 'none',
               backgroundSize: '100% 100%',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
