@@ -33,7 +33,9 @@ export default function ApproveOrganizationModal({ open, onClose, org, onApprove
       // 1. Extend subscription to set the start/end dates correctly and save payment reference
       await organizationsApi.extendSubscription(org._id || org.id, {
         planId: org.subscriptionConfig?.planId,
-        paymentReferenceId: form.paymentReferenceId
+        paymentReferenceId: form.paymentReferenceId,
+        paymentStatus: form.paymentStatus,
+        lastPaymentDate: form.lastPaymentDate
       });
       // 2. Set the organization to ACTIVE
       await organizationsApi.updateStatus(org._id || org.id, 'ACTIVE');
