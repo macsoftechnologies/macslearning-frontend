@@ -33,7 +33,33 @@ export default function AuditLogs() {
           { key: 'user', header: 'User', render: (r) => r.actorId?.fullName || r.actorId?.email || r.actorId?.id || '—' },
           { key: 'action', header: 'Action' },
           { key: 'resource', header: 'Resource', render: (r) => r.organizationId?.name || r.targetId || '—' },
-          { key: 'details', header: 'Details', render: (r) => <span className="text-muted">{typeof r.metadata === 'string' ? r.metadata : JSON.stringify(r.metadata || {})}</span> },
+          { 
+            key: 'details', 
+            header: 'Details', 
+            render: (r) => {
+              if (!r.metadata || Object.keys(r.metadata).length === 0) return <span className="text-muted">—</span>;
+              if (typeof r.metadata === 'string') return <span className="text-muted">{r.metadata}</span>;
+              return (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {Object.entries(r.metadata).map(([k, v]) => {
+                    const displayValue = typeof v === 'object' ? JSON.stringify(v) : String(v);
+                    return (
+                      <span key={k} style={{ 
+                        fontSize: '11px', 
+                        background: 'var(--c-bg-subtle)', 
+                        border: '1px solid var(--c-border)', 
+                        padding: '2px 6px', 
+                        borderRadius: '4px',
+                        color: 'var(--c-text-muted)'
+                      }}>
+                        <strong style={{ color: 'var(--c-text)' }}>{k}:</strong> {displayValue}
+                      </span>
+                    )
+                  })}
+                </div>
+              );
+            }
+          },
         ]}
         rows={items}
       />
