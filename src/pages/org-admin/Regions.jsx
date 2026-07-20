@@ -21,7 +21,7 @@ export default function Regions() {
 
   const load = () => {
     setLoading(true);
-    regionsApi.list().then((res) => setRegions(res.data?.data || [])).finally(() => setLoading(false));
+    regionsApi.list({ localOnly: true }).then((res) => setRegions(res.data?.data || [])).finally(() => setLoading(false));
   };
   useEffect(load, []);
 
