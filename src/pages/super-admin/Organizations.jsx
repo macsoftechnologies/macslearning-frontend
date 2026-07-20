@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Eye, Power, Download, CheckCircle } from 'lucide-react';
+import { Plus, Eye, Power, Download, CheckCircle, XCircle } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import usePagination from '../../hooks/usePagination';
@@ -24,6 +24,7 @@ export default function Organizations() {
   const [modalOpen, setModalOpen] = useState(false);
   const [toggleTarget, setToggleTarget] = useState(null);
   const [approveTarget, setApproveTarget] = useState(null);
+  const [rejectTarget, setRejectTarget] = useState(null);
   const debouncedSearch = useDebounce(search, 500);
   
   const { items, page, setPage, meta, loading, refresh } = usePagination(
@@ -41,6 +42,18 @@ export default function Organizations() {
       refresh();
     } catch (err) {
       extractErrorMessages(err).forEach((m) => toast.error(m));
+    }
+  };
+
+  const rejectOrganization = async () => {
+    if (!rejectTarget) return;
+    try {
+      await organizationsApi.remove(rejectTarget._id || rejectTarget.id);
+      toast.success('Organization application rejected.');
+      setRejectTarget(null);
+      refresh();
+    } catch (err) {
+      extractErrorMessages(err).forEach(m => toast.error(m));
     }
   };
 
@@ -114,9 +127,14 @@ export default function Organizations() {
                   <Button size="sm" variant="ghost" icon={Eye}>View</Button>
                 </Link>
                 {filter === 'pending' && r.status === 'INACTIVE' ? (
-                  <Button size="sm" variant="primary" icon={CheckCircle} onClick={() => setApproveTarget(r)}>
-                    Approve
-                  </Button>
+                  <>
+                    <Button size="sm" variant="primary" icon={CheckCircle} onClick={() => setApproveTarget(r)}>
+                      Approve
+                    </Button>
+                    <Button size="sm" variant="outline" tone="critical" icon={XCircle} onClick={() => setRejectTarget(r)}>
+                      Reject
+                    </Button>
+                  </>
                 ) : (
                   <Button size="sm" variant="outline" icon={Power} onClick={() => setToggleTarget(r)}>
                     {r.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
@@ -157,6 +175,15 @@ export default function Organizations() {
         title={`${toggleTarget?.status === 'ACTIVE' ? 'Deactivate' : 'Activate'} Organization?`}
         description={`Are you sure you want to ${toggleTarget?.status === 'ACTIVE' ? 'deactivate' : 'activate'} "${toggleTarget?.name}"?`}
         confirmLabel="Confirm"
+      />
+
+      <ConfirmDialog
+        open={!!rejectTarget}
+        onClose={() => setRejectTarget(null)}
+        onConfirm={rejectOrganization}
+        title="Reject Organization Application"
+        description={`Are you sure you want to reject the application for "${rejectTarget?.name}"? This will delete the organization and cannot be undone.`}
+        confirmLabel="Reject Application"
       />
     </div>
   );

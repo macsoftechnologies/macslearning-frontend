@@ -3,11 +3,13 @@ import client from './client';
 export const getPublicBySlug = (slug) => client.get(`/public/organizations/${slug}`);
 
 export const list = (params) => client.get('/organizations', { params });
+export const getCounts = () => client.get('/organizations/counts');
 export const create = (data) => client.post('/organizations', data);
 export const updateStatus = (id, status) => client.patch(`/organizations/${id}/status`, { status });
 export const getMe = () => client.get('/organizations/me');
 export const updateMe = (data) => client.patch('/organizations/me', data);
 export const update = (id, data) => client.patch(`/organizations/${id}`, data);
+export const remove = (id) => client.delete(`/organizations/${id}`);
 export const extendSubscription = (id, data) => client.post(`/organizations/${id}/extend-subscription`, data);
 
 export const getCoursePlans = () => client.get('/organizations/me/course-plans');

@@ -30,7 +30,7 @@ export default function RegisterOrganization() {
     if (form.regionId) {
       // Fetch public plans for the selected region
       client.get('/subscription-plans/public', { params: { regionId: form.regionId } })
-        .then(res => setPlans(res.data || []))
+        .then(res => setPlans(res.data?.data || res.data || []))
         .catch(() => {});
     } else {
       setPlans([]);
@@ -84,8 +84,8 @@ export default function RegisterOrganization() {
             <br /><br />
             If you need immediate assistance with payment, please contact our Support Team.
           </p>
-          <Button full variant="outline" onClick={() => navigate(`/`)}>
-            Back to Home
+          <Button full variant="outline" onClick={() => window.location.reload()}>
+            Register Another Organization
           </Button>
         </div>
       </AuthShell>
@@ -97,11 +97,12 @@ export default function RegisterOrganization() {
       eyebrow={`Step ${step} of 3`}
       title={step === 1 ? "Admin Details" : step === 2 ? "Organization Setup" : "Select a Plan"}
       subtitle={step === 1 ? "Create your master admin account." : step === 2 ? "Set up your workspace." : "Choose the right tier for your needs."}
-      footer={
-        <>
-          Already have an organization? <Link to="/super-admin/login">Sign in here</Link>
-        </>
-      }
+      wide={step === 3}
+      // footer={
+      //   <>
+      //     Already have an organization? <Link to="/super-admin/login">Sign in here</Link>
+      //   </>
+      // }
     >
       <form className="stack" onSubmit={step === 3 ? onSubmit : nextStep}>
         {errors.length > 0 && (
@@ -159,50 +160,100 @@ export default function RegisterOrganization() {
 
         {step === 3 && (
           <>
-            <div className="stack" style={{ gap: '16px' }}>
+            {/* Add a subtle colorful background blob to make glassmorphism visible */}
+            <div style={{ position: 'absolute', top: '10%', left: '-20%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0) 70%)', borderRadius: '50%', zIndex: 0, pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '10%', right: '-20%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(236,72,153,0.15) 0%, rgba(236,72,153,0) 70%)', borderRadius: '50%', zIndex: 0, pointerEvents: 'none' }} />
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', position: 'relative', zIndex: 1 }}>
               {plans.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', background: 'var(--c-bg-subtle)', borderRadius: '8px' }}>
+                <div style={{ textAlign: 'center', padding: '30px', background: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(10px)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.3)' }}>
                   <p className="text-muted">No active plans found for this region.</p>
                 </div>
               ) : (
-                plans.map(p => (
-                  <div 
-                    key={p.id} 
-                    onClick={() => setForm(f => ({ ...f, planId: p.id }))}
-                    style={{ 
-                      padding: '16px', 
-                      border: `2px solid ${form.planId === p.id ? 'var(--brand)' : 'var(--c-border)'}`,
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      background: form.planId === p.id ? 'var(--brand-subtle)' : 'var(--c-bg)',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    {p.name.toLowerCase().includes('pro') || p.name.toLowerCase().includes('enterprise') ? (
-                       <div style={{ position: 'absolute', top: 12, right: 12, background: 'var(--brand)', color: 'white', fontSize: '10px', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
-                         RECOMMENDED
-                       </div>
-                    ) : null}
-                    <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8, alignItems: 'center' }}>
-                      <strong style={{ fontSize: '16px' }}>{p.name}</strong>
+                plans.map(p => {
+                  const isSelected = form.planId === p.id;
+                  const isRecommended = p.name.toLowerCase().includes('pro') || p.name.toLowerCase().includes('enterprise');
+                  return (
+                    <div 
+                      key={p.id} 
+                      onClick={() => setForm(f => ({ ...f, planId: p.id }))}
+                      style={{ 
+                        padding: '24px', 
+                        border: isSelected ? '1.5px solid var(--brand)' : '1px solid rgba(255, 255, 255, 0.5)',
+                        borderRadius: '20px',
+                        cursor: 'pointer',
+                        background: isSelected 
+                          ? 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%)' 
+                          : 'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        boxShadow: isSelected 
+                          ? '0 12px 40px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5)' 
+                          : '0 8px 32px rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.3)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        transform: isSelected ? 'translateY(-4px) scale(1.02)' : 'translateY(0) scale(1)',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%)';
+                        }
+                      }}
+                    >
+                      {isRecommended && (
+                         <div style={{ 
+                           position: 'absolute', 
+                           top: 0, 
+                           right: 24, 
+                           background: 'linear-gradient(90deg, #6366f1, #ec4899)', 
+                           color: 'white', 
+                           fontSize: '11px', 
+                           padding: '6px 16px', 
+                           borderRadius: '0 0 8px 8px', 
+                           fontWeight: 'bold',
+                           letterSpacing: '0.5px',
+                           boxShadow: '0 4px 12px rgba(236, 72, 153, 0.3)'
+                         }}>
+                           RECOMMENDED
+                         </div>
+                      )}
+                      
+                      <div className="row" style={{ justifyContent: 'space-between', marginBottom: 12, alignItems: 'center' }}>
+                        <strong style={{ fontSize: '18px', color: isSelected ? 'var(--c-text)' : 'var(--c-text-light)' }}>{p.name}</strong>
+                        {isSelected && (
+                          <CheckCircle2 size={24} color="var(--brand)" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
+                        )}
+                      </div>
+                      
+                      <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: 16, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <span style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-muted)' }}>{p.currency || 'USD'}</span>
+                        <span style={{ color: isSelected ? 'var(--brand)' : 'var(--c-text)' }}>
+                          {p.price}
+                        </span>
+                      </div>
+                      
+                      <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '13px', background: 'rgba(255, 255, 255, 0.6)', border: '1px solid rgba(255,255,255,0.8)', padding: '4px 10px', borderRadius: '20px', fontWeight: '500', color: 'var(--c-text-light)' }}>
+                          {p.maxUsers ? `Up to ${p.maxUsers} Users` : 'Unlimited Users'}
+                        </span>
+                        <span style={{ fontSize: '13px', background: 'rgba(255, 255, 255, 0.6)', border: '1px solid rgba(255,255,255,0.8)', padding: '4px 10px', borderRadius: '20px', fontWeight: '500', color: 'var(--c-text-light)' }}>
+                          {p.storageGB ? `${p.storageGB} GB Storage` : 'Unlimited Storage'}
+                        </span>
+                        <span style={{ fontSize: '13px', background: 'rgba(255, 255, 255, 0.6)', border: '1px solid rgba(255,255,255,0.8)', padding: '4px 10px', borderRadius: '20px', fontWeight: '500', color: 'var(--c-text-light)' }}>
+                          {p.durationInDays} Days
+                        </span>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: 8 }}>
-                      {p.currency || 'USD'} {p.price}
-                    </div>
-                    <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '12px', background: 'var(--c-bg-subtle)', padding: '2px 8px', borderRadius: '4px' }}>
-                        {p.maxUsers ? `Up to ${p.maxUsers} Users` : 'Unlimited Users'}
-                      </span>
-                      <span style={{ fontSize: '12px', background: 'var(--c-bg-subtle)', padding: '2px 8px', borderRadius: '4px' }}>
-                        {p.storageGB ? `${p.storageGB} GB Storage` : 'Unlimited Storage'}
-                      </span>
-                      <span style={{ fontSize: '12px', background: 'var(--c-bg-subtle)', padding: '2px 8px', borderRadius: '4px' }}>
-                        {p.durationInDays} Days
-                      </span>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
             

@@ -102,7 +102,14 @@ export default function CreateOrganizationModal({ open, onClose, onCreated }) {
             <Field label="Plan" required>
               <Select value={form.subscriptionPlanId} onChange={update('subscriptionPlanId')} required disabled={!form.regionId}>
                 <option value="">Select a plan</option>
-                {plans.filter(p => !p.regionId || p.regionId === form.regionId).map((p) => <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>)}
+                {plans.filter(p => {
+                  if (!form.regionId) return false;
+                  // Only show plan if it has a price configured for this region
+                  if (p.regionalPrices && Array.isArray(p.regionalPrices)) {
+                    return p.regionalPrices.some(rp => rp.regionId === form.regionId);
+                  }
+                  return false;
+                }).map((p) => <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>)}
               </Select>
             </Field>
           </div>
@@ -132,6 +139,18 @@ export default function CreateOrganizationModal({ open, onClose, onCreated }) {
           {(() => {
             const p = plans.find(p => (p.id || p._id) === form.subscriptionPlanId);
             const calculatedExp = p?.durationInDays ? new Date(Date.now() + p.durationInDays * 24 * 60 * 60 * 1000) : null;
+            
+            // Extract regional price
+            let regionalPrice = 0;
+            let regionalCurrency = 'USD';
+            if (p?.regionalPrices && Array.isArray(p.regionalPrices)) {
+              const rp = p.regionalPrices.find(rp => rp.regionId === form.regionId);
+              if (rp) {
+                regionalPrice = rp.price;
+                regionalCurrency = rp.currency;
+              }
+            }
+
             return (
               <div style={{ padding: '20px', background: 'var(--c-bg-subtle)', borderRadius: 'var(--r-md)', border: '1px solid var(--c-border)' }}>
                 <h4 style={{ margin: '0 0 16px 0', fontSize: 'var(--fs-md)' }}>Order Summary</h4>
@@ -155,7 +174,7 @@ export default function CreateOrganizationModal({ open, onClose, onCreated }) {
                   <hr style={{ margin: '8px 0', borderColor: 'var(--c-border)' }} />
                   <div className="row" style={{ justifyContent: 'space-between', fontSize: '18px', fontWeight: 'bold' }}>
                     <span>Total Due</span>
-                    <span>{p?.currency || 'USD'} {p?.price}</span>
+                    <span>{regionalCurrency} {regionalPrice}</span>
                   </div>
                 </div>
               </div>

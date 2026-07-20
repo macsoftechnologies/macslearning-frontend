@@ -122,7 +122,7 @@ export default function SuperAdminDashboard() {
                     <StatusBadge status={p.isActive ? 'ACTIVE' : 'INACTIVE'} />
                   </div>
                   <p className="text-muted" style={{ fontSize: 'var(--fs-sm)', marginTop: 6 }}>
-                    {p.currency || 'USD'} {p.price} / {p.billingCycle}
+                    {p.currency || p.regionalPrices?.[0]?.currency || 'USD'} {p.price ?? p.regionalPrices?.[0]?.price ?? 0} / {p.billingCycle || `${p.durationInDays || 30} Days`}
                   </p>
                 </div>
               ))}
