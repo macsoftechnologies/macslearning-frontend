@@ -30,10 +30,10 @@ export default function AuditLogs() {
         emptyLabel="No audit entries found."
         columns={[
           { key: 'createdAt', header: 'Timestamp', render: (r) => (r.createdAt ? new Date(r.createdAt).toLocaleString() : '—') },
-          { key: 'user', header: 'User', render: (r) => r.user?.fullName || r.userId || '—' },
+          { key: 'user', header: 'User', render: (r) => r.actorId?.fullName || r.actorId?.email || r.actorId?.id || '—' },
           { key: 'action', header: 'Action' },
-          { key: 'resource', header: 'Resource', render: (r) => r.resource || r.resourceType || '—' },
-          { key: 'details', header: 'Details', render: (r) => <span className="text-muted">{typeof r.details === 'string' ? r.details : JSON.stringify(r.details || {})}</span> },
+          { key: 'resource', header: 'Resource', render: (r) => r.organizationId?.name || r.targetId || '—' },
+          { key: 'details', header: 'Details', render: (r) => <span className="text-muted">{typeof r.metadata === 'string' ? r.metadata : JSON.stringify(r.metadata || {})}</span> },
         ]}
         rows={items}
       />
