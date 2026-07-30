@@ -20,6 +20,8 @@ export default function OrganizationDetail() {
   const [org, setOrg] = useState(location.state?.org || null);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(!location.state?.org);
+  const [storage, setStorage] = useState(null);
+  const [storageLoading, setStorageLoading] = useState(false);
   
   // Modals state
   const [editOrgOpen, setEditOrgOpen] = useState(false);
@@ -34,6 +36,14 @@ export default function OrganizationDetail() {
     }).catch(() => {});
   };
 
+  const fetchStorage = () => {
+    setStorageLoading(true);
+    organizationsApi.getStorage(id)
+      .then(res => setStorage(res.data?.data || res.data))
+      .catch(() => setStorage({ usedMB: 0, usedGB: 0, usedBytes: 0 }))
+      .finally(() => setStorageLoading(false));
+  };
+
   useEffect(() => {
     if (!org) {
       organizationsApi.list({ page: 1, limit: 100 }).then((res) => {
@@ -43,6 +53,7 @@ export default function OrganizationDetail() {
       }).catch(() => setLoading(false));
     }
     fetchUsers();
+    fetchStorage();
   }, [id, org]);
 
   const toggleStatus = async () => {
@@ -136,8 +147,13 @@ export default function OrganizationDetail() {
           <div className="stack" style={{ gap: 8 }}>
             <Row label="Plan Type" value={org.subscriptionConfig?.planType || '—'} />
             <Row label="Max Students" value={org.subscriptionConfig?.maxStudents ?? '—'} />
-            <Row label="Max Storage" value={org.subscriptionConfig?.maxStorageGB ? `${org.subscriptionConfig.maxStorageGB} GB` : '—'} />
             <Row label="Expires At" value={org.subscriptionConfig?.expiresAt ? new Date(org.subscriptionConfig.expiresAt).toLocaleDateString() : '—'} />
+            <div style={{ height: 1, background: 'var(--border-subtle)', margin: '8px 0' }} />
+            <Row label="Allocated Storage" value={org.subscriptionConfig?.maxStorageGB ? `${org.subscriptionConfig.maxStorageGB} GB` : '—'} />
+            <Row 
+              label="Used Storage (Vimeo)" 
+              value={storageLoading ? 'Calculating...' : storage ? `${storage.usedGB} GB (${storage.usedMB} MB)` : '—'} 
+            />
           </div>
         </Card>
         <Card style={{ padding: 'var(--sp-5)' }}>
