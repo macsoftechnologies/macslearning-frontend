@@ -16,7 +16,7 @@ export default function FacultyProfile() {
   useEffect(() => {
     usersApi.getFacultyDetails(id)
       .then((res) => {
-        setData(res.data);
+        setData(res.data?.data || res.data);
       })
       .finally(() => {
         setLoading(false);

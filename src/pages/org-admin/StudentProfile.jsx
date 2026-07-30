@@ -16,7 +16,7 @@ export default function StudentProfile() {
   useEffect(() => {
     studentsApi.getStudentDetails(id)
       .then((res) => {
-        setData(res.data);
+        setData(res.data?.data || res.data);
       })
       .finally(() => {
         setLoading(false);
