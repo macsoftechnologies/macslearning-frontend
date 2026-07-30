@@ -8,8 +8,8 @@ import { Card } from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
 import PageLoader from '../../components/ui/PageLoader';
 
-const PROGRESS_COLORS = ['var(--color-primary-600)', 'var(--border)'];
-const SCORE_COLORS = ['#10b981', '#ef4444', 'var(--border)']; // Green, Red, Gray
+const PROGRESS_COLORS = ['#8b5cf6', '#f1f5f9']; // Vibrant Purple, Light Gray
+const SCORE_COLORS = ['#f59e0b', '#f43f5e', '#f1f5f9']; // Amber for pass, Rose for fail, Light Gray for remaining
 
 export default function StudentProfile() {
   const { id } = useParams();
@@ -98,19 +98,21 @@ export default function StudentProfile() {
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
                     <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>Course Progress</p>
-                      <p style={{ fontSize: 'var(--fs-lg)', fontWeight: 700, color: 'var(--color-primary-700)' }}>{progress}%</p>
+                      <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>Course Progress</p>
                     </div>
-                    <div style={{ width: 60, height: 60 }}>
+                    <div style={{ width: 120, height: 120, position: 'relative' }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={progressData}
-                            innerRadius={20}
-                            outerRadius={28}
-                            paddingAngle={2}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={35}
+                            outerRadius={50}
+                            paddingAngle={5}
                             dataKey="value"
                             stroke="none"
+                            cornerRadius={4}
                           >
                             {progressData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={PROGRESS_COLORS[index]} />
@@ -119,6 +121,9 @@ export default function StudentProfile() {
                           <Tooltip formatter={(value) => `${value}%`} />
                         </PieChart>
                       </ResponsiveContainer>
+                      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', pointerEvents: 'none' }}>
+                        <span style={{ fontSize: 'var(--fs-lg)', fontWeight: 800, color: '#334155' }}>{progress}%</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -147,23 +152,28 @@ export default function StudentProfile() {
                           ];
                           return (
                             <div className="row" style={{ gap: 'var(--sp-3)' }}>
-                              <span style={{ fontWeight: 600, color: pass ? '#10b981' : (r.status === 'SUBMITTED' ? '#ef4444' : 'inherit') }}>
+                              <span style={{ fontWeight: 600, fontSize: 'var(--fs-md)', color: pass ? '#10b981' : (r.status === 'SUBMITTED' ? '#ef4444' : 'inherit') }}>
                                 {r.status === 'SUBMITTED' ? `${score}/${max}` : '—'}
                               </span>
                               {r.status === 'SUBMITTED' && (
-                                <div style={{ width: 24, height: 24 }}>
+                                <div style={{ width: 40, height: 40 }}>
                                   <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                       <Pie
                                         data={chartData}
-                                        innerRadius={8}
-                                        outerRadius={12}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={12}
+                                        outerRadius={18}
+                                        paddingAngle={2}
                                         dataKey="value"
                                         stroke="none"
+                                        cornerRadius={2}
                                       >
                                         <Cell fill={pass ? SCORE_COLORS[0] : SCORE_COLORS[1]} />
                                         <Cell fill={SCORE_COLORS[2]} />
                                       </Pie>
+                                      <Tooltip />
                                     </PieChart>
                                   </ResponsiveContainer>
                                 </div>
