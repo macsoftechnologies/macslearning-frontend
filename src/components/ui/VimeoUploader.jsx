@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import * as tus from 'tus-js-client';
 import { Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
 import Button from './Button';
-import { request } from '../../api/client';
+import client from '../../api/client';
 
 export default function VimeoUploader({ onUploaded, label = 'Upload Video', videoName = 'Untitled Video' }) {
   const [file, setFile] = useState(null);
@@ -34,12 +34,9 @@ export default function VimeoUploader({ onUploaded, label = 'Upload Video', vide
 
     try {
       // 1. Get ticket from our backend
-      const res = await request('/vimeo/upload-ticket', {
-        method: 'POST',
-        body: JSON.stringify({
-          fileSize: file.size,
-          videoName: videoName || file.name,
-        }),
+      const res = await client.post('/vimeo/upload-ticket', {
+        fileSize: file.size,
+        videoName: videoName || file.name,
       });
 
       const { uploadLink, link } = res.data;
