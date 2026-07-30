@@ -42,7 +42,6 @@ import Enrollments from './pages/org-admin/Enrollments';
 import AdminPayments from './pages/org-admin/Payments';
 import ReportsOverview from './pages/org-admin/ReportsOverview';
 import CoursePerformance from './pages/org-admin/CoursePerformance';
-import StudentActivity from './pages/org-admin/StudentActivity';
 import OrganizationSettings from './pages/org-admin/OrganizationSettings';
 import CoursePlans from './pages/org-admin/CoursePlans';
 import CertificateTemplates from './pages/org-admin/CertificateTemplates';
@@ -179,7 +178,6 @@ export default function App() {
             <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/reports/overview" element={<ReportsOverview />} />
             <Route path="/admin/reports/course-performance" element={<CoursePerformance />} />
-            <Route path="/admin/reports/student-activity" element={<StudentActivity />} />
             <Route path="/admin/settings/organization" element={<OrganizationSettings />} />
             <Route path="/admin/course-plans" element={<CoursePlans />} />
             <Route path="/admin/certificate-templates" element={<CertificateTemplates />} />

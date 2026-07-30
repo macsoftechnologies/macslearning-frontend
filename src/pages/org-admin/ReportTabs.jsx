@@ -9,7 +9,6 @@ export default function ReportTabs() {
       tabs={[
         { key: 'overview', label: 'Overview' },
         { key: 'course-performance', label: 'Course Performance' },
-        { key: 'student-activity', label: 'Student Activity' },
       ]}
       active={location.pathname.split('/').pop()}
       onChange={(k) => navigate(`/admin/reports/${k}`)}
