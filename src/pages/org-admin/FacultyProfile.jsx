@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import * as usersApi from '../../api/users';
-import * as coursesApi from '../../api/courses';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { Card } from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
@@ -10,30 +9,24 @@ import PageLoader from '../../components/ui/PageLoader';
 
 export default function FacultyProfile() {
   const { id } = useParams();
-  const [faculty, setFaculty] = useState(null);
-  const [courses, setCourses] = useState([]);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('courses');
 
   useEffect(() => {
-    Promise.allSettled([
-      usersApi.list({ limit: 200, userType: 'FACULTY' }),
-      coursesApi.list({ limit: 100 }),
-    ]).then(([u, c]) => {
-      if (u.status === 'fulfilled') {
-        const all = u.value.data?.data || [];
-        // Only match FACULTY or ORG_USER roles
-        setFaculty(all.find((x) => (x._id || x.id) === id && (x.userType === 'FACULTY' || x.userType === 'ORG_USER')) || null);
-      }
-      if (c.status === 'fulfilled') {
-        const allCourses = c.value.data?.data || [];
-        setCourses(allCourses.filter((course) => course.instructorIds?.some(i => i === id || i?._id === id || i?.id === id)));
-      }
-      setLoading(false);
-    });
+    usersApi.getFacultyDetails(id)
+      .then((res) => {
+        setData(res.data);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [id]);
 
   if (loading) return <PageLoader />;
-  if (!faculty) return <div className="page"><p>Faculty member not found.</p></div>;
+  if (!data || !data.profile) return <div className="page"><p>Faculty member not found.</p></div>;
+
+  const { profile, courses, stats } = data;
 
   return (
     <div className="page">
@@ -45,10 +38,10 @@ export default function FacultyProfile() {
         <div>
           <span className="page-eyebrow">Faculty</span>
           <div className="row">
-            <h1 className="page-title">{faculty.fullName}</h1>
-            <StatusBadge status={faculty.status || 'ACTIVE'} />
+            <h1 className="page-title">{profile.fullName || `${profile.firstName} ${profile.lastName}`}</h1>
+            <StatusBadge status={profile.status || 'ACTIVE'} />
           </div>
-          <p className="page-subtitle">{faculty.email}</p>
+          <p className="page-subtitle">{profile.email}</p>
         </div>
       </div>
 
@@ -56,32 +49,46 @@ export default function FacultyProfile() {
         <Card style={{ padding: 'var(--sp-5)' }}>
           <p className="section-title">Contact Info</p>
           <div className="stack" style={{ gap: 8 }}>
-            <Row label="Mobile" value={faculty.mobile || '—'} />
-            <Row label="Joined" value={faculty.createdAt ? new Date(faculty.createdAt).toLocaleDateString() : '—'} />
-            <Row label="Email Verified" value={faculty.emailVerified ? 'Yes' : 'No'} />
+            <Row label="Mobile" value={profile.mobile || '—'} />
+            <Row label="Joined" value={profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : '—'} />
+            <Row label="Email Verified" value={profile.emailVerified ? 'Yes' : 'No'} />
           </div>
         </Card>
         <Card style={{ padding: 'var(--sp-5)' }}>
-          <p className="section-title">Summary</p>
+          <p className="section-title">Summary Stats</p>
           <div className="stack" style={{ gap: 8 }}>
-            <Row label="Total Courses" value={courses.length} />
-            <Row label="Role" value={faculty.userType || 'FACULTY'} />
-            <Row label="Status" value={faculty.status || 'ACTIVE'} />
+            <Row label="Total Courses" value={stats.totalCourses} />
+            <Row label="Total Students" value={stats.totalStudents} />
+            <Row label="Status" value={profile.status || 'ACTIVE'} />
           </div>
         </Card>
       </div>
 
-      <p className="section-title">Assigned Courses</p>
-      <DataTable
-        columns={[
-          { key: 'title', header: 'Title' },
-          { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} /> },
-          { key: 'price', header: 'Price', render: (r) => r.pricing?.isPaid ? `${r.pricing.currency || 'USD'} ${r.pricing.amount}` : 'Free' },
-          { key: 'createdAt', header: 'Created', render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—' },
-        ]}
-        rows={courses}
-        emptyLabel="No courses assigned to this faculty member."
-      />
+      <div className="tabs" style={{ display: 'flex', gap: 'var(--sp-4)', borderBottom: '1px solid var(--border)', marginBottom: 'var(--sp-5)' }}>
+        <button 
+          className={`tab-btn ${activeTab === 'courses' ? 'active' : ''}`}
+          style={{ padding: 'var(--sp-2) 0', borderBottom: activeTab === 'courses' ? '2px solid var(--color-primary-600)' : 'none', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: activeTab === 'courses' ? 'var(--color-primary-600)' : 'var(--text-muted)' }}
+          onClick={() => setActiveTab('courses')}
+        >
+          Courses & Students
+        </button>
+      </div>
+
+      {activeTab === 'courses' && (
+        <>
+          <p className="section-title">Assigned Courses</p>
+          <DataTable
+            columns={[
+              { key: 'title', header: 'Course Title' },
+              { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+              { key: 'studentCount', header: 'Enrolled Students' },
+              { key: 'createdAt', header: 'Created', render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—' },
+            ]}
+            rows={courses || []}
+            emptyLabel="No courses assigned to this faculty member."
+          />
+        </>
+      )}
     </div>
   );
 }

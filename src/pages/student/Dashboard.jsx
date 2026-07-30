@@ -54,7 +54,7 @@ export default function StudentDashboard() {
         <div className="course-grid">
           {inProgress.slice(0, 6).map((e) => (
             <Link to={`/student/my-courses/${e.courseId?._id || e.courseId?.id || e.courseId}/learn`} key={e._id || e.id} className="course-card">
-              <div className="course-card__thumb" style={{ backgroundImage: e.courseId?.thumbnailUrl ? `url(${buildStaticUrl(e.courseId.thumbnailUrl)})` : undefined }}>
+              <div className="course-card__thumb" style={{ backgroundImage: e.courseId?.thumbnailUrl ? `url('${buildStaticUrl(e.courseId.thumbnailUrl)}')` : undefined }}>
                 {!e.courseId?.thumbnailUrl && <Library size={28} />}
               </div>
               <div className="course-card__body">

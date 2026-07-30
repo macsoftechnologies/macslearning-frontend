@@ -101,7 +101,7 @@ export default function FacultyExamAttemptReview() {
         <p className="text-muted" style={{ marginTop: 'var(--sp-2)' }}>
           Score: {computedMarksObtained} / {attempt.totalMarks} ({computedPercentage.toFixed(1)}%)
           &nbsp;&middot;&nbsp; 
-          Status: <span style={{ color: attempt.isPassed ? 'var(--color-success-600)' : 'var(--color-danger-600)', fontWeight: 'bold' }}>{attempt.isPassed ? 'PASSED' : 'FAILED'}</span>
+          Status: {attempt.answers?.some(a => a.isGraded === false) ? <span style={{ color: 'var(--color-amber-600)', fontWeight: 'bold' }}>PENDING REVIEW</span> : <span style={{ color: attempt.isPassed ? 'var(--color-success-600)' : 'var(--color-danger-600)', fontWeight: 'bold' }}>{attempt.isPassed ? 'PASSED' : 'FAILED'}</span>}
         </p>
         
         {exam?.isFinalExam && attempt.isPassed && (

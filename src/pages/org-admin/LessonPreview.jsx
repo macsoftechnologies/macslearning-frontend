@@ -4,6 +4,7 @@ import { ArrowLeft, FileText } from 'lucide-react';
 import { buildStaticUrl } from '../../api/client';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
+import PageLoader from '../../components/ui/PageLoader';
 
 const getVideoEmbedUrl = (url) => {
   if (!url) return null;
@@ -31,7 +32,11 @@ export default function LessonPreview() {
   const { id } = useParams();
   const location = useLocation();
   const [previewContentUrl, setPreviewContentUrl] = useState(null);
+  const [iframeLoading, setIframeLoading] = useState(true);
   
+  useEffect(() => {
+    if (previewContentUrl) setIframeLoading(true);
+  }, [previewContentUrl]);
   // Use state if we navigated from CourseDetail, otherwise would need to fetch (skipped for now)
   const lesson = location.state?.lesson;
   const base = location.pathname.startsWith('/faculty') ? '/faculty' : '/admin';
@@ -104,17 +109,24 @@ export default function LessonPreview() {
           </div>
         )}
       </div>
-      <Modal open={!!previewContentUrl} onClose={() => setPreviewContentUrl(null)} title="View Attachment" width={800}>
-        <div style={{ height: '70vh', background: '#f8fafc', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+      <Modal open={!!previewContentUrl} onClose={() => setPreviewContentUrl(null)} title="View Attachment" width={1200}>
+        <div style={{ position: 'relative', height: '75vh', background: '#f8fafc', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
           {previewContentUrl && (
             previewContentUrl.match(/\.(jpe?g|png|gif|svg)$/i) ? (
-              <img src={buildStaticUrl(previewContentUrl)} alt="Attachment" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <>
+                {iframeLoading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><PageLoader /></div>}
+                <img src={buildStaticUrl(previewContentUrl)} alt="Attachment" onLoad={() => setIframeLoading(false)} style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: iframeLoading ? 0 : 1 }} />
+              </>
             ) : (
-              <iframe
-                src={buildStaticUrl(previewContentUrl)}
-                title="Attachment Preview"
-                style={{ width: '100%', height: '100%', border: 'none' }}
-              />
+              <>
+                {iframeLoading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><PageLoader /></div>}
+                <iframe
+                  src={buildStaticUrl(previewContentUrl)}
+                  title="Attachment Preview"
+                  onLoad={() => setIframeLoading(false)}
+                  style={{ width: '100%', height: '100%', border: 'none', opacity: iframeLoading ? 0 : 1 }}
+                />
+              </>
             )
           )}
         </div>

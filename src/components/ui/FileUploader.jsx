@@ -1,9 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadCloud, File as FileIcon, X, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { uploadFile } from '../../api/upload';
-import { extractErrorMessages } from '../../api/client';
+import { extractErrorMessages, buildStaticUrl } from '../../api/client';
 import './FileUploader.css';
 
 export default function FileUploader({
@@ -16,8 +16,16 @@ export default function FileUploader({
 }) {
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [localPreview, setLocalPreview] = useState(preview || null);
+  // Normalize the initial preview: if it's a relative backend path, build the full URL
+  const [localPreview, setLocalPreview] = useState(preview ? buildStaticUrl(preview) : null);
   const [fileName, setFileName] = useState('');
+
+  // Sync when the parent loads async data (e.g., editing a saved course)
+  useEffect(() => {
+    if (preview && !fileName) {
+      setLocalPreview(buildStaticUrl(preview));
+    }
+  }, [preview]);
 
   const onDrop = useCallback(
     async (accepted) => {

@@ -29,10 +29,11 @@ export function PermissionGuard({ allowedPermissions, children }) {
   if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/login" replace />;
   
+  const perms = user.permissions || user.modulePermissions || [];
   // Root Super Admin check
-  if (!user.permissions || user.permissions.length === 0) return children;
+  if (perms.length === 0 && (role === 'SUPER_ADMIN' || role === 'ORG_USER')) return children;
 
-  const hasAccess = allowedPermissions.some(p => user.permissions.includes(p));
+  const hasAccess = allowedPermissions.some(p => perms.includes(p) || perms.includes('ALL'));
   if (!hasAccess) {
     return <RedirectWithToast to={homeFor(role)} message="Access Denied: You lack the required permissions to view this page." />;
   }

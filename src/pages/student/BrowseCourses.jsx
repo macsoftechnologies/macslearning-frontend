@@ -69,7 +69,7 @@ export default function BrowseCourses() {
         <div className="course-grid">
           {items.map((c) => (
             <div key={c._id || c.id} className="course-card" onClick={() => navigate(`/student/courses/${c._id || c.id}`)} style={{ cursor: 'pointer' }}>
-              <div className="course-card__thumb" style={{ backgroundImage: c.thumbnailUrl ? `url(${buildStaticUrl(c.thumbnailUrl)})` : undefined }}>
+              <div className="course-card__thumb" style={{ backgroundImage: c.thumbnailUrl ? `url('${buildStaticUrl(c.thumbnailUrl)}')` : undefined }}>
                 {!c.thumbnailUrl && <Library size={28} />}
               </div>
               <div className="course-card__body">

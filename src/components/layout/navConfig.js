@@ -19,15 +19,21 @@ export const NAV = {
     { to: '/super-admin/team', label: 'Team', icon: Shield, requiredPermissions: ['MANAGE_ROLES'] },
   ],
   ORG_USER: [
-    { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    // Dashboard visible to everyone (all ORG_USER sub-roles)
+    { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, requiredPermissions: ['MANAGE_CONTENT', 'MANAGE_USERS', 'ALL'] },
+    // Full admin only items (no requiredPermissions means hidden from restricted sub-admins)
     { to: '/admin/regions', label: 'Regions', icon: Compass },
-    { to: '/admin/students', label: 'Students', icon: GraduationCap },
-    { to: '/admin/faculty', label: 'Faculty', icon: Users },
+    // User management
+    { to: '/admin/students', label: 'Students', icon: GraduationCap, requiredPermissions: ['MANAGE_USERS', 'ALL'] },
+    { to: '/admin/faculty', label: 'Faculty', icon: Users, requiredPermissions: ['MANAGE_USERS', 'ALL'] },
     { to: '/admin/finance-team', label: 'Finance Team', icon: Users },
-    { to: '/admin/categories', label: 'Categories', icon: FolderTree },
+    { to: '/admin/team', label: 'Team', icon: Shield },
+    // Content management
+    { to: '/admin/approvals', label: 'Content Approvals', icon: ClipboardList, requiredPermissions: ['MANAGE_CONTENT', 'ALL'] },
+    { to: '/admin/categories', label: 'Categories', icon: FolderTree, requiredPermissions: ['MANAGE_CONTENT', 'ALL'] },
     { to: '/admin/certificate-templates', label: 'Certificates', icon: Award },
     { to: '/admin/course-plans', label: 'Course Plan', icon: FileCheck2 },
-    { to: '/admin/courses', label: 'Courses', icon: BookOpen },
+    { to: '/admin/courses', label: 'Courses', icon: BookOpen, requiredPermissions: ['MANAGE_CONTENT', 'ALL'] },
     { to: '/admin/enrollments', label: 'Enrollments', icon: ClipboardList },
     { to: '/admin/payments', label: 'Payments', icon: Wallet },
     { to: '/admin/reports/overview', label: 'Reports', icon: BarChart3 },

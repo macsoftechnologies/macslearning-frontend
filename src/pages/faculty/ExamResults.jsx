@@ -58,7 +58,10 @@ export default function ExamResults() {
             { key: 'student', header: 'Student', render: (r) => r.studentId?.fullName || '—' },
             { key: 'submittedAt', header: 'Completed On', render: (r) => new Date(r.createdAt).toLocaleString() },
             { key: 'score', header: 'Score', render: (r) => `${r.marksObtained} / ${r.totalMarks} (${Math.round(r.percentage)}%)` },
-            { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.isPassed ? 'SUCCESS' : 'FAILED'} /> },
+            { key: 'status', header: 'Status', render: (r) => {
+              if (r.needsGrading) return <StatusBadge status="WARNING" label="PENDING REVIEW" />;
+              return <StatusBadge status={r.isPassed ? 'SUCCESS' : 'FAILED'} label={r.isPassed ? 'PASSED' : 'FAILED'} />;
+            } },
             { key: 'visibility', header: 'Visibility', render: (r) => <StatusBadge status={r.isPublished ? 'PUBLISHED' : 'DRAFT'} /> },
             {
               key: 'actions', header: 'Actions', render: (r) => (

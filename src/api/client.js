@@ -12,7 +12,11 @@ export const buildStaticUrl = (path) => {
   const safePath = path.replace(/\\/g, '/');
   let normalizedPath = safePath.startsWith('/') ? safePath.substring(1) : safePath;
 
-  return `${STATIC_BASE_URL}/${normalizedPath}`;
+  if (normalizedPath.startsWith('uploads/') && STATIC_BASE_URL.includes('launchpaad.tech')) {
+    normalizedPath = 'public/' + normalizedPath;
+  }
+
+  return `${STATIC_BASE_URL}/${encodeURI(normalizedPath)}`;
 };
 
 const client = axios.create({ baseURL: API_BASE_URL });

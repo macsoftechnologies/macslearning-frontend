@@ -10,4 +10,5 @@ export const requestCertificate = (data) => client.post('/certificates/request',
 export const approveCertificate = (data) => client.post('/certificates/approve', data);
 
 export const myCertificates = () => client.get('/certificates/my-certificates');
+export const courseCertificates = (courseId) => client.get(`/certificates/courses/${courseId}`);
 export const getById = (id) => client.get(`/certificates/${id}`);

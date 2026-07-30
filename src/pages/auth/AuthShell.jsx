@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BookMarked } from 'lucide-react';
+import { buildStaticUrl } from '../../api/client';
 import { getPublicBySlug } from '../../api/organizations';
 import './AuthShell.css';
 
@@ -40,7 +41,7 @@ export default function AuthShell({ eyebrow, title, subtitle, children, wide, fo
           {!loading && (
             <>
               {org?.logoUrl ? (
-                <img src={org.logoUrl} alt={`${org.name} logo`} style={{ maxHeight: '32px', marginRight: '8px' }} />
+                <img src={buildStaticUrl(org.logoUrl)} alt={`${org.name} logo`} style={{ maxHeight: '32px', marginRight: '8px' }} />
               ) : (
                 <span className="auth-shell__mark">
                   <BookMarked size={20} />

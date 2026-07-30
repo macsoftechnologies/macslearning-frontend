@@ -141,7 +141,7 @@ export default function CourseForm() {
           {errors.length > 0 && <div className="auth-error-box"><ul>{errors.map((m, i) => <li key={i}>{m}</li>)}</ul></div>}
 
           <Field label="Course Title" required><Input value={form.title} onChange={update('title')} required /></Field>
-          <Field label="Description"><Textarea rows={4} value={form.description} onChange={update('description')} /></Field>
+          <Field label="Description"><Textarea rows={12} value={form.description} onChange={update('description')} /></Field>
 
           <div className="form-grid">
             <Field label="Category">

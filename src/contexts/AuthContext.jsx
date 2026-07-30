@@ -26,14 +26,20 @@ export function AuthProvider({ children }) {
 
   const applyAuth = useCallback((data) => {
     setTokens({ accessToken: data.accessToken, refreshToken: data.refreshToken });
-    setUser(data.user);
-    setRole(data.user.userType);
-    if (data.user.organizationSlug) {
-      localStorage.setItem('orgSlug', data.user.organizationSlug);
+    // Normalize: always expose permissions from either JWT `permissions` or DB `modulePermissions`
+    const rawUser = data.user;
+    const normalizedUser = {
+      ...rawUser,
+      permissions: rawUser.permissions || rawUser.modulePermissions || [],
+    };
+    setUser(normalizedUser);
+    setRole(normalizedUser.userType);
+    if (normalizedUser.organizationSlug) {
+      localStorage.setItem('orgSlug', normalizedUser.organizationSlug);
     }
-    if (data.user.organizationName) {
-      localStorage.setItem('orgName', data.user.organizationName);
-    } else if (data.user.userType === 'SUPER_ADMIN') {
+    if (normalizedUser.organizationName) {
+      localStorage.setItem('orgName', normalizedUser.organizationName);
+    } else if (normalizedUser.userType === 'SUPER_ADMIN') {
       localStorage.setItem('orgName', 'MacsLearn');
     }
     setLoading(false);

@@ -389,10 +389,6 @@ export default function CertificateTemplateBuilder() {
               width: `${A4_WIDTH}px`,
               height: `${A4_HEIGHT}px`,
               backgroundColor: bgType === 'BLANK' ? '#ffffff' : 'transparent',
-              backgroundImage: bgType === 'IMAGE' && bgUrl ? `url("${buildStaticUrl(bgUrl)}")` : 'none',
-              backgroundSize: '100% 100%',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
               position: 'absolute',
               top: 0,
               left: 0,
@@ -400,6 +396,29 @@ export default function CertificateTemplateBuilder() {
               transform: `scale(${scale})`,
               transformOrigin: 'top left'
             }}>
+              {bgType === 'IMAGE' && bgUrl && (
+                <img 
+                  src={buildStaticUrl(bgUrl)} 
+                  alt="background" 
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    zIndex: 0,
+                    objectFit: 'fill' // equivalent to backgroundSize: '100% 100%'
+                  }}
+                  onError={(e) => {
+                    if (!e.target.dataset.errored) {
+                      e.target.dataset.errored = 'true';
+                      import('react-hot-toast').then(module => {
+                        module.default.error(`Failed to load background image from server: ${e.target.src}`);
+                      });
+                    }
+                  }}
+                />
+              )}
             <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, borderTop: '1px dashed rgba(0,0,0,0.1)' }} />
             <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, borderLeft: '1px dashed rgba(0,0,0,0.1)' }} />
 

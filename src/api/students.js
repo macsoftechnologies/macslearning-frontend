@@ -9,3 +9,4 @@ export const remove = (id) => client.delete(`/students/${id}`);
 export const approve = (id) => client.patch(`/students/${id}/approve`);
 export const reject = (id, rejectionReason) =>
   client.patch(`/students/${id}/reject`, { rejectionReason });
+export const getStudentDetails = (id) => client.get(`/students/${id}/details`);

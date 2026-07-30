@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, Plus, ChevronDown, ChevronRight, Pencil, Trash2, FileText, Video, HelpCircle, Users, ClipboardList, FileCheck2, MessagesSquare, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Plus, ChevronDown, ChevronRight, Pencil, Trash2, FileText, Video, HelpCircle, Users, ClipboardList, FileCheck2, MessagesSquare, CheckCircle2, Award, Send, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
 import * as coursesApi from '../../api/courses';
 import * as contentApi from '../../api/content';
 import * as usersApi from '../../api/users';
 import * as regionsApi from '../../api/regions';
 import * as assignmentsApi from '../../api/assignments';
 import * as examsApi from '../../api/exams';
-import * as discussionApi from '../../api/discussion';
 import { extractErrorMessages, buildStaticUrl } from '../../api/client';
 import StatusBadge from '../../components/ui/StatusBadge';
+import CertificatesTab from '../../components/course/CertificatesTab';
 import Tabs from '../../components/ui/Tabs';
 import Button from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -21,7 +22,6 @@ import EmptyState from '../../components/ui/EmptyState';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import PageLoader from '../../components/ui/PageLoader';
 import FileUploader from '../../components/ui/FileUploader';
-import ThreadDetailModal from '../../components/discussion/ThreadDetailModal';
 import CourseDiscussionSidebar from '../../components/course/CourseDiscussionSidebar';
 
 const basePathFor = (pathname) => (pathname.startsWith('/faculty') ? '/faculty' : '/admin');
@@ -37,6 +37,9 @@ export default function CourseDetail() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [facultyMap, setFacultyMap] = useState({});
   const [regionMap, setRegionMap] = useState({});
+  const { user } = useAuth();
+  const [rejectModal, setRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
 
 
   const load = () => {
@@ -48,7 +51,7 @@ export default function CourseDetail() {
       setFacultyMap(map);
     }).catch(() => {});
     
-    regionsApi.list({ localOnly: true }).then((res) => {
+    regionsApi.list().then((res) => {
       setRegions(res.data?.data || []);
       const map = {};
       (res.data?.data || res.data || []).forEach(r => { map[r._id || r.id] = r.name; });
@@ -67,6 +70,30 @@ export default function CourseDetail() {
       extractErrorMessages(err).forEach((m) => toast.error(m));
     }
   };
+
+  const submitForReview = async () => {
+    try {
+      await coursesApi.updateStatus(id, 'IN_REVIEW');
+      toast.success('Course submitted for review!');
+      load();
+    } catch (err) {
+      extractErrorMessages(err).forEach((m) => toast.error(m));
+    }
+  };
+
+  const rejectCourse = async () => {
+    try {
+      await coursesApi.updateStatus(id, 'DRAFT', rejectReason);
+      toast.success('Course rejected and sent back to Draft.');
+      setRejectModal(false);
+      load();
+    } catch (err) {
+      extractErrorMessages(err).forEach((m) => toast.error(m));
+    }
+  };
+
+  const canManageContent = user?.userType === 'ORG_USER' && (user?.modulePermissions?.includes('ALL') || user?.modulePermissions?.includes('MANAGE_CONTENT') || !user?.modulePermissions);
+  const isFaculty = user?.userType === 'FACULTY';
 
   if (loading) return <PageLoader />;
   if (!course) return <div className="page"><p>Course not found.</p></div>;
@@ -102,8 +129,17 @@ export default function CourseDetail() {
           </div>
         </div>
         <div className="row">
-          {course.status !== 'PUBLISHED' && (
-            <Button variant="outline" icon={CheckCircle2} onClick={publishCourse}>Publish Course</Button>
+          {course.status === 'DRAFT' && isFaculty && (
+            <Button variant="primary" icon={Send} onClick={submitForReview}>Submit for Review</Button>
+          )}
+          {course.status === 'IN_REVIEW' && canManageContent && (
+            <>
+              <Button variant="outline" style={{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }} icon={XCircle} onClick={() => setRejectModal(true)}>Reject</Button>
+              <Button variant="primary" icon={CheckCircle2} onClick={publishCourse}>Approve & Publish</Button>
+            </>
+          )}
+          {course.status === 'DRAFT' && canManageContent && (
+            <Button variant="outline" icon={CheckCircle2} onClick={publishCourse}>Publish directly</Button>
           )}
           {base === '/admin' && (
             <Link to={`${base}/courses/${id}/edit`}><Button variant="outline" icon={Pencil}>Edit Details</Button></Link>
@@ -118,17 +154,18 @@ export default function CourseDetail() {
           { key: 'students', label: 'Students', icon: Users },
           { key: 'assignments', label: 'Assignments', icon: ClipboardList },
           { key: 'exams', label: 'Exams', icon: FileCheck2 },
-          { key: 'discussions', label: 'Discussions', icon: MessagesSquare },
+          { key: 'certificates', label: 'Certificates', icon: Award },
         ]}
         active={tab}
         onChange={setTab}
       />
 
-      {tab === 'content' && <ContentTab courseId={id} base={base} />}
+      {tab === 'content' && <ContentTab courseId={id} base={base} canManageContent={canManageContent} />}
       {tab === 'students' && <StudentsTab courseId={id} />}
       {tab === 'assignments' && <AssignmentsTab courseId={id} base={base} />}
-      {tab === 'exams' && <ExamsTab courseId={id} base={base} />}
-      {tab === 'discussions' && <DiscussionsTab courseId={id} base={base} />}
+      {tab === 'exams' && <ExamsTab courseId={id} base={base} canManageContent={canManageContent} />}
+      {tab === 'certificates' && <CertificatesTab courseId={id} />}
+
 
       <Modal open={viewPricing} onClose={() => setViewPricing(false)} title="Regional Pricing" width={400}>
         <div style={{ marginBottom: '16px' }}>
@@ -158,6 +195,21 @@ export default function CourseDetail() {
         </div>
       </Modal>
 
+      <Modal open={rejectModal} onClose={() => setRejectModal(false)} title="Reject Course">
+        <div style={{ padding: '24px 0' }}>
+          <p style={{ marginBottom: '16px', fontSize: 'var(--fs-sm)', color: 'var(--text-muted)' }}>
+            Please provide a reason for rejecting this course. The faculty member will see this feedback.
+          </p>
+          <Field label="Rejection Reason">
+            <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="e.g. Video 2 has no audio..." rows={4} />
+          </Field>
+        </div>
+        <div className="modal-panel__foot" style={{ margin: '0 -24px -24px', padding: '16px 24px', justifyContent: 'flex-end', gap: '8px' }}>
+          <Button variant="outline" onClick={() => setRejectModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={rejectCourse} disabled={!rejectReason.trim()}>Reject & Send Back</Button>
+        </div>
+      </Modal>
+
       <CourseDiscussionSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} courseId={id} />
     </div>
   );
@@ -165,7 +217,7 @@ export default function CourseDetail() {
 
 /* ---------------------------- Content Tab ---------------------------- */
 
-function ContentTab({ courseId, base }) {
+function ContentTab({ courseId, base, canManageContent }) {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({});
@@ -177,6 +229,9 @@ function ContentTab({ courseId, base }) {
   const [deleteModuleTarget, setDeleteModuleTarget] = useState(null);
   const [deleteLessonTarget, setDeleteLessonTarget] = useState(null);
   const [saving, setSaving] = useState(false);
+  
+  const [rejectModalTarget, setRejectModalTarget] = useState(null); // { type: 'module'|'lesson', id: string, moduleId?: string }
+  const [rejectReason, setRejectReason] = useState('');
 
   const loadModules = () => {
     setLoading(true);
@@ -259,6 +314,43 @@ function ContentTab({ courseId, base }) {
     }
   };
 
+  const handleApprove = async (e, type, modId, lesId) => {
+    e.stopPropagation();
+    try {
+      if (type === 'module') {
+        await contentApi.approveModule(courseId, modId);
+        toast.success('Module approved');
+      } else {
+        await contentApi.approveLesson(courseId, modId, lesId);
+        toast.success('Lesson approved');
+        const res = await contentApi.listLessons(courseId, modId);
+        setLessonsByModule((prev) => ({ ...prev, [modId]: res.data?.data || [] }));
+      }
+      loadModules();
+    } catch (err) {
+      extractErrorMessages(err).forEach((m) => toast.error(m));
+    }
+  };
+
+  const doReject = async () => {
+    try {
+      if (rejectModalTarget.type === 'module') {
+        await contentApi.rejectModule(courseId, rejectModalTarget.id, rejectReason);
+        toast.success('Module rejected');
+      } else {
+        await contentApi.rejectLesson(courseId, rejectModalTarget.moduleId, rejectModalTarget.id, rejectReason);
+        toast.success('Lesson rejected');
+        const res = await contentApi.listLessons(courseId, rejectModalTarget.moduleId);
+        setLessonsByModule((prev) => ({ ...prev, [rejectModalTarget.moduleId]: res.data?.data || [] }));
+      }
+      setRejectModalTarget(null);
+      setRejectReason('');
+      loadModules();
+    } catch (err) {
+      extractErrorMessages(err).forEach((m) => toast.error(m));
+    }
+  };
+
   if (loading) return <PageLoader />;
 
   return (
@@ -280,8 +372,20 @@ function ContentTab({ courseId, base }) {
               <span className="row" style={{ fontWeight: 600 }}>
                 {expanded[mod._id || mod.id] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 {mod.title}
+                {mod.contentStatus === 'IN_REVIEW' && (
+                  <span style={{ fontSize: '10px', padding: '2px 6px', background: 'var(--color-warning)', color: '#fff', borderRadius: '4px', marginLeft: 8 }}>IN REVIEW</span>
+                )}
+                {mod.reviewNotes && mod.contentStatus === 'IN_REVIEW' && (
+                  <span style={{ fontSize: '10px', color: 'var(--color-danger)', marginLeft: 8 }}>Rejected</span>
+                )}
               </span>
               <span className="row">
+                {canManageContent && mod.contentStatus === 'IN_REVIEW' && (
+                  <>
+                    <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setRejectModalTarget({ type: 'module', id: mod._id || mod.id }); }}>Reject</Button>
+                    <Button size="sm" variant="primary" onClick={(e) => handleApprove(e, 'module', mod._id || mod.id)}>Approve</Button>
+                  </>
+                )}
                 <Button size="sm" variant="ghost" icon={Plus} onClick={(e) => { e.stopPropagation(); setLessonForm({ title: '', description: '', type: 'VIDEO', videoUrl: '', content: '', contentUrl: '', durationMinutes: '' }); setLessonModal({ moduleId: mod._id || mod.id }); }}>Add Lesson</Button>
                 <Button size="sm" variant="ghost" icon={Trash2} onClick={(e) => { e.stopPropagation(); setDeleteModuleTarget(mod); }} />
               </span>
@@ -297,6 +401,12 @@ function ContentTab({ courseId, base }) {
                       {lesson.type === 'VIDEO' ? <Video size={15} /> : lesson.type === 'QUIZ' ? <HelpCircle size={15} /> : <FileText size={15} />}
                       {lesson.title}
                       <span className="text-muted" style={{ fontSize: 'var(--fs-2xs)' }}>{lesson.durationMinutes ? `${lesson.durationMinutes} min` : ''}</span>
+                      {lesson.contentStatus === 'IN_REVIEW' && (
+                        <span style={{ fontSize: '10px', padding: '2px 6px', background: 'var(--color-warning)', color: '#fff', borderRadius: '4px', marginLeft: 8 }}>IN REVIEW</span>
+                      )}
+                      {lesson.reviewNotes && lesson.contentStatus === 'IN_REVIEW' && (
+                        <span style={{ fontSize: '10px', color: 'var(--color-danger)', marginLeft: 8 }}>Rejected</span>
+                      )}
                     </span>
                     <span className="row" style={{ gap: '12px', alignItems: 'center' }}>
                       <Link to={`${base}/courses/${courseId}/lessons/${lesson._id || lesson.id}/preview`} state={{ lesson }} style={{ fontSize: 'var(--fs-xs)', textDecoration: 'underline', color: 'var(--color-primary-600)' }}>
@@ -306,6 +416,12 @@ function ContentTab({ courseId, base }) {
                         <Link to={`${base}/courses/${courseId}/lessons/${lesson._id || lesson.id}/video-quizzes`} state={{ lesson }} style={{ fontSize: 'var(--fs-xs)', textDecoration: 'underline', color: 'var(--color-primary-600)' }}>
                           Manage Quizzes
                         </Link>
+                      )}
+                      {canManageContent && lesson.contentStatus === 'IN_REVIEW' && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => setRejectModalTarget({ type: 'lesson', id: lesson._id || lesson.id, moduleId: mod._id || mod.id })}>Reject</Button>
+                          <Button size="sm" variant="primary" onClick={(e) => handleApprove(e, 'lesson', mod._id || mod.id, lesson._id || lesson.id)}>Approve</Button>
+                        </>
                       )}
                       <Button size="sm" variant="ghost" icon={Pencil} onClick={() => {
                         setLessonForm({
@@ -344,18 +460,13 @@ function ContentTab({ courseId, base }) {
         <form className="stack" id="lesson-form" onSubmit={submitLesson}>
           <Field label="Lesson Title" required><Input value={lessonForm.title} onChange={(e) => setLessonForm((f) => ({ ...f, title: e.target.value }))} required /></Field>
           <Field label="Description"><Textarea rows={3} value={lessonForm.description} onChange={(e) => setLessonForm((f) => ({ ...f, description: e.target.value }))} /></Field>
-          <div className="row" style={{ gap: 'var(--sp-4)' }}>
-            <Field label="Type" style={{ flex: 1 }}>
-              <Select value={lessonForm.type} onChange={(e) => setLessonForm((f) => ({ ...f, type: e.target.value }))}>
-                <option value="VIDEO">Video</option>
-                <option value="DOCUMENT">Document / PDF</option>
-                <option value="TEXT">Text</option>
-              </Select>
-            </Field>
-            <Field label="Duration (Minutes)" style={{ flex: 1 }}>
-              <Input type="number" min="0" value={lessonForm.durationMinutes} onChange={(e) => setLessonForm((f) => ({ ...f, durationMinutes: e.target.value }))} placeholder="e.g. 15" />
-            </Field>
-          </div>
+          <Field label="Type">
+            <Select value={lessonForm.type} onChange={(e) => setLessonForm((f) => ({ ...f, type: e.target.value }))}>
+              <option value="VIDEO">Video</option>
+              <option value="DOCUMENT">Document / PDF</option>
+              <option value="TEXT">Text</option>
+            </Select>
+          </Field>
           <Field label="Video URL (YouTube/Vimeo)">
             <Input value={lessonForm.videoUrl} onChange={(e) => setLessonForm((f) => ({ ...f, videoUrl: e.target.value }))} placeholder="https://..." />
             {lessonForm.videoUrl && <div style={{ marginTop: 8, fontSize: 'var(--fs-xs)' }}><a href={lessonForm.videoUrl} target="_blank" rel="noreferrer">Test Video Link</a></div>}
@@ -378,6 +489,21 @@ function ContentTab({ courseId, base }) {
 
       <ConfirmDialog open={!!deleteModuleTarget} onClose={() => setDeleteModuleTarget(null)} onConfirm={doDeleteModule} title="Delete this module?" description="All lessons within it will also be removed." confirmLabel="Delete Module" />
       <ConfirmDialog open={!!deleteLessonTarget} onClose={() => setDeleteLessonTarget(null)} onConfirm={doDeleteLesson} title="Delete this lesson?" confirmLabel="Delete Lesson" />
+
+      <Modal open={!!rejectModalTarget} onClose={() => setRejectModalTarget(null)} title={`Reject ${rejectModalTarget?.type === 'module' ? 'Module' : 'Lesson'}`}>
+        <div style={{ padding: '24px 0' }}>
+          <p style={{ marginBottom: '16px', fontSize: 'var(--fs-sm)', color: 'var(--text-muted)' }}>
+            Provide a reason for rejection. This keeps the item in draft mode so the faculty can make changes.
+          </p>
+          <Field label="Rejection Reason">
+            <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={4} />
+          </Field>
+        </div>
+        <div className="modal-panel__foot" style={{ margin: '0 -24px -24px', padding: '16px 24px', justifyContent: 'flex-end', gap: '8px' }}>
+          <Button variant="outline" onClick={() => setRejectModalTarget(null)}>Cancel</Button>
+          <Button variant="primary" onClick={doReject} disabled={!rejectReason.trim()}>Reject Item</Button>
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -482,12 +608,14 @@ function AssignmentsTab({ courseId, base }) {
 
 /* ---------------------------- Exams Tab ---------------------------- */
 
-function ExamsTab({ courseId, base }) {
+function ExamsTab({ courseId, base, canManageContent }) {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [addExam, setAddExam] = useState({ title: '', durationMinutes: 60, totalMarks: 100, passingPercentage: 40, maxAttempts: 3, isFinalExam: false });
   const [saving, setSaving] = useState(false);
+  const [rejectModalTarget, setRejectModalTarget] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const load = () => {
     setLoading(true);
@@ -517,6 +645,28 @@ function ExamsTab({ courseId, base }) {
     }
   };
 
+  const handleApprove = async (examId) => {
+    try {
+      await examsApi.approve(examId);
+      toast.success('Exam approved');
+      load();
+    } catch (err) {
+      extractErrorMessages(err).forEach((m) => toast.error(m));
+    }
+  };
+
+  const doReject = async () => {
+    try {
+      await examsApi.reject(rejectModalTarget, rejectReason);
+      toast.success('Exam rejected');
+      setRejectModalTarget(null);
+      setRejectReason('');
+      load();
+    } catch (err) {
+      extractErrorMessages(err).forEach((m) => toast.error(m));
+    }
+  };
+
   return (
     <div className="stack">
       <div className="row" style={{ justifyContent: 'flex-end' }}>
@@ -534,6 +684,12 @@ function ExamsTab({ courseId, base }) {
           {
             key: 'actions', header: 'Actions', render: (r) => (
               <div className="row" style={{ gap: '8px' }}>
+                {canManageContent && r.status === 'IN_REVIEW' && (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => setRejectModalTarget(r._id || r.id)}>Reject</Button>
+                    <Button size="sm" variant="primary" onClick={() => handleApprove(r._id || r.id)}>Approve</Button>
+                  </>
+                )}
                 <Link to={`${base}/courses/${courseId}/exams/${r._id || r.id}`}>
                   <Button size="sm" variant="outline">Manage</Button>
                 </Link>
@@ -578,81 +734,21 @@ function ExamsTab({ courseId, base }) {
           <Button type="submit" form="exam-form" loading={saving}>Create Exam</Button>
         </div>
       </Modal>
-    </div>
-  );
-}
 
-/* ---------------------------- Discussions Tab ---------------------------- */
-
-function DiscussionsTab({ courseId, base }) {
-  const [threads, setThreads] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [activeThreadId, setActiveThreadId] = useState(null);
-  const [form, setForm] = useState({ title: '', content: '' });
-  const [saving, setSaving] = useState(false);
-
-  const load = () => {
-    setLoading(true);
-    discussionApi.listThreads(courseId).then((res) => setThreads(res.data?.data || [])).finally(() => setLoading(false));
-  };
-  useEffect(load, [courseId]);
-
-  const submit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await discussionApi.createThread(courseId, form);
-      toast.success('Thread created');
-      setModalOpen(false);
-      setForm({ title: '', content: '' });
-      load();
-    } catch (err) {
-      extractErrorMessages(err).forEach((m) => toast.error(m));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="stack">
-      <div className="row" style={{ justifyContent: 'flex-end' }}>
-        <Button icon={Plus} size="sm" onClick={() => setModalOpen(true)}>New Thread</Button>
-      </div>
-      <DataTable
-        loading={loading}
-        emptyLabel="No discussions yet for this course."
-        columns={[
-          { key: 'title', header: 'Title', render: (r) => <div style={{ fontWeight: 600 }}>{r.title}</div> },
-          { key: 'author', header: 'Author', render: (r) => r.author?.fullName || '—' },
-          { key: 'repliesCount', header: 'Replies', render: (r) => r.repliesCount ?? 0 },
-          { key: 'createdAt', header: 'Created', render: (r) => new Date(r.createdAt).toLocaleDateString() },
-          { key: 'actions', header: 'Actions', render: (r) => (
-            <Button size="sm" variant="ghost" onClick={() => setActiveThreadId(r._id || r.id)}>
-              View Thread
-            </Button>
-          )},
-        ]}
-        rows={threads}
-      />
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New Discussion Thread" width={500}>
-        <form className="stack" id="thread-form" onSubmit={submit}>
-          <Field label="Title" required><Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required /></Field>
-          <Field label="Content" required><Textarea rows={6} value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} required /></Field>
-        </form>
-        <div className="modal-panel__foot" style={{ margin: '16px -24px -24px', padding: '16px 24px' }}>
-          <Button variant="outline" type="button" onClick={() => setModalOpen(false)}>Cancel</Button>
-          <Button type="submit" form="thread-form" loading={saving}>Post Thread</Button>
+      <Modal open={!!rejectModalTarget} onClose={() => setRejectModalTarget(null)} title="Reject Exam">
+        <div style={{ padding: '24px 0' }}>
+          <p style={{ marginBottom: '16px', fontSize: 'var(--fs-sm)', color: 'var(--text-muted)' }}>
+            Provide a reason for rejection. This returns the exam to DRAFT mode.
+          </p>
+          <Field label="Rejection Reason">
+            <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={4} />
+          </Field>
+        </div>
+        <div className="modal-panel__foot" style={{ margin: '0 -24px -24px', padding: '16px 24px', justifyContent: 'flex-end', gap: '8px' }}>
+          <Button variant="outline" onClick={() => setRejectModalTarget(null)}>Cancel</Button>
+          <Button variant="primary" onClick={doReject} disabled={!rejectReason.trim()}>Reject Exam</Button>
         </div>
       </Modal>
-
-      <ThreadDetailModal 
-        open={!!activeThreadId}
-        onClose={() => setActiveThreadId(null)}
-        courseId={courseId}
-        threadId={activeThreadId}
-        onResolved={() => load()}
-      />
     </div>
   );
 }

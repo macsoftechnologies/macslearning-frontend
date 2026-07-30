@@ -18,7 +18,14 @@ export const updateLesson = (courseId, moduleId, lessonId, data) =>
   client.patch(`/courses/${courseId}/content/modules/${moduleId}/lessons/${lessonId}`, data);
 export const deleteLesson = (courseId, moduleId, lessonId) =>
   client.delete(`/courses/${courseId}/content/modules/${moduleId}/lessons/${lessonId}`);
-
+export const approveModule = (courseId, moduleId) =>
+  client.patch(`/courses/${courseId}/content/modules/${moduleId}/approve`);
+export const rejectModule = (courseId, moduleId, reason) =>
+  client.patch(`/courses/${courseId}/content/modules/${moduleId}/reject`, { reason });
+export const approveLesson = (courseId, moduleId, lessonId) =>
+  client.patch(`/courses/${courseId}/content/modules/${moduleId}/lessons/${lessonId}/approve`);
+export const rejectLesson = (courseId, moduleId, lessonId, reason) =>
+  client.patch(`/courses/${courseId}/content/modules/${moduleId}/lessons/${lessonId}/reject`, { reason });
 // Video Quiz Answers
 export const submitVideoQuizAnswer = (courseId, moduleId, lessonId, quizId, payload) =>
   client.post(`/courses/${courseId}/content/modules/${moduleId}/lessons/${lessonId}/video-quizzes/${quizId}/answers`, payload);

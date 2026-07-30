@@ -19,16 +19,23 @@ export default function Sidebar({ role, user, open, onNavigate }) {
   }, [role]);
   
   const items = allItems.filter(item => {
-    if (!item.requiredPermissions || item.requiredPermissions.length === 0) return true;
+    // Collect the user's effective permissions (normalized by AuthContext)
+    const perms = user?.permissions || [];
     
-    // If it's a SUPER_ADMIN and they have NO modulePermissions set, they are the root admin
-    if (role === 'SUPER_ADMIN' && (!user.permissions || user.permissions.length === 0)) {
-      return true;
+    // SUPER_ADMIN or ORG_USER with NO restrictions → full access to all items
+    const isFullAdmin = (role === 'SUPER_ADMIN' || role === 'ORG_USER') && perms.length === 0;
+
+    // Restricted ORG_USER sub-admins (have explicit modulePermissions)
+    if (!isFullAdmin && role === 'ORG_USER' && perms.length > 0) {
+      // Items without requiredPermissions are full-admin-only — hide from sub-admins
+      if (!item.requiredPermissions || item.requiredPermissions.length === 0) return false;
+      return item.requiredPermissions.some(perm => perms.includes(perm));
     }
 
-    if (!user || !user.permissions) return false;
-    // Check if user has at least one of the required permissions
-    return item.requiredPermissions.some(perm => user.permissions.includes(perm));
+    // Full admin: show everything, or filter by requiredPermissions if set (SUPER_ADMIN team)
+    if (!item.requiredPermissions || item.requiredPermissions.length === 0) return true;
+    if (isFullAdmin) return true;
+    return item.requiredPermissions.some(perm => perms.includes(perm));
   });
 
   const brandName = role === 'SUPER_ADMIN' 

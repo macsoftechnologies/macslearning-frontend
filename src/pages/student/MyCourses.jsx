@@ -38,7 +38,7 @@ export default function MyCourses() {
         <div className="course-grid">
           {enrollments.map((e) => (
             <Link to={e.status === 'EXPIRED' ? '#' : `/student/my-courses/${e.courseId?._id || e.courseId?.id || e.courseId}/learn`} key={e._id || e.id} className="course-card" style={e.status === 'EXPIRED' ? { opacity: 0.7 } : {}}>
-              <div className="course-card__thumb" style={{ backgroundImage: e.courseId?.thumbnailUrl ? `url(${buildStaticUrl(e.courseId.thumbnailUrl)})` : undefined, position: 'relative' }}>
+              <div className="course-card__thumb" style={{ backgroundImage: e.courseId?.thumbnailUrl ? `url('${buildStaticUrl(e.courseId.thumbnailUrl)}')` : undefined, position: 'relative' }}>
                 {!e.courseId?.thumbnailUrl && <Library size={28} />}
                 {e.status === 'EXPIRED' && <span style={{ position: 'absolute', top: 8, right: 8, background: 'var(--danger)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: 'var(--fs-xs)', fontWeight: 'bold' }}>Expired</span>}
               </div>

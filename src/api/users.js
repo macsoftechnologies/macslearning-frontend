@@ -8,3 +8,4 @@ export const list = (params) => client.get('/users', { params });
 export const updateStatus = (id, status) => client.patch(`/users/${id}/status`, { status });
 export const update = (id, data) => client.patch(`/users/${id}`, data);
 export const remove = (id) => client.delete(`/users/${id}`);
+export const getFacultyDetails = (id) => client.get(`/users/faculty/${id}/details`);

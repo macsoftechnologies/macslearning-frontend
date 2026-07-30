@@ -78,10 +78,24 @@ export default function Results() {
               { key: 'exam', header: 'Exam', render: (r) => r.examId?.title || '—' },
               { key: 'attempt', header: 'Attempt #', render: (r) => r.attemptNumber },
               { key: 'score', header: 'Score', render: (r) => `${r.marksObtained ?? 0} / ${r.totalMarks ?? '—'}` },
-              { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+              { key: 'status', header: 'Status', render: (r) => {
+                let displayStatus = r.status;
+                if (r.status === 'SUBMITTED' && r.answers) {
+                  try {
+                    const ans = typeof r.answers === 'string' ? JSON.parse(r.answers) : r.answers;
+                    const needsGrading = ans.some(a => a.isGraded === false);
+                    if (needsGrading) {
+                      return <StatusBadge status="WARNING" label="PENDING REVIEW" />;
+                    } else {
+                      displayStatus = 'EVALUATED';
+                    }
+                  } catch(e) {}
+                }
+                return <StatusBadge status={displayStatus} />;
+              } },
               { key: 'date', header: 'Date', render: (r) => (r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—') },
               { key: 'actions', header: '', render: (r) => (
-                <Link to={`/student/courses/${r.examId?.courseId}/exams/${r.examId?._id}/review/${r._id}`} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '12px' }}>
+                <Link to={`/student/my-courses/${r.examId?.courseId}/exams/${r.examId?._id || r.examId?.id}/attempts/${r._id || r.id}/review`} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '12px' }}>
                   Review
                 </Link>
               ) }

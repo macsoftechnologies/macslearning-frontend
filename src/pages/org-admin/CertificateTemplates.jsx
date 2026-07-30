@@ -77,7 +77,7 @@ export default function CertificateTemplates() {
               width: `${A4_WIDTH}px`,
               height: `${A4_HEIGHT}px`,
               backgroundColor: previewTemplate?.backgroundType === 'BLANK' ? '#ffffff' : 'transparent',
-              backgroundImage: previewTemplate?.backgroundType === 'IMAGE' && previewTemplate?.backgroundImageUrl ? `url(${buildStaticUrl(previewTemplate.backgroundImageUrl)})` : 'none',
+              backgroundImage: previewTemplate?.backgroundType === 'IMAGE' && previewTemplate?.backgroundImageUrl ? `url('${buildStaticUrl(previewTemplate.backgroundImageUrl)}')` : 'none',
               backgroundSize: '100% 100%',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',

@@ -29,6 +29,8 @@ import Students from './pages/org-admin/Students';
 import StudentProfile from './pages/org-admin/StudentProfile';
 import Faculty from './pages/org-admin/Faculty';
 import FacultyProfile from './pages/org-admin/FacultyProfile';
+import ContentApprovals from './pages/org-admin/ContentApprovals';
+import OrgTeam from './pages/org-admin/OrgTeam';
 import FinanceTeam from './pages/org-admin/FinanceTeam';
 import Courses from './pages/org-admin/Courses';
 import CourseForm from './pages/org-admin/CourseForm';
@@ -160,7 +162,9 @@ export default function App() {
             <Route path="/admin/faculty" element={<Faculty />} />
             <Route path="/admin/faculty/:id" element={<FacultyProfile />} />
             <Route path="/admin/finance-team" element={<FinanceTeam />} />
+            <Route path="/admin/team" element={<OrgTeam />} />
             <Route path="/admin/courses" element={<Courses />} />
+            <Route path="/admin/approvals" element={<ContentApprovals />} />
             <Route path="/admin/courses/create" element={<CourseForm />} />
             <Route path="/admin/courses/:id/edit" element={<CourseForm />} />
             <Route path="/admin/courses/:id" element={<CourseDetail />} />
@@ -209,6 +213,7 @@ export default function App() {
             <Route path="/faculty/courses/:id/assignments/:assignmentId/submissions" element={<AssignmentSubmissions />} />
             <Route path="/faculty/notifications" element={<Notifications />} />
             <Route path="/faculty/profile" element={<Profile />} />
+            <Route path="/faculty/students/:id" element={<StudentProfile />} />
             <Route path="/faculty/*" element={<NotFound />} />
           </Route>
 

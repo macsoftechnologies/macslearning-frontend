@@ -4,6 +4,8 @@ export const create = (courseId, data) => client.post(`/courses/${courseId}/exam
 export const list = (courseId, params) => client.get(`/courses/${courseId}/exams`, { params });
 export const getById = (examId) => client.get(`/exams/${examId}`);
 export const publish = (examId) => client.patch(`/exams/${examId}/publish`);
+export const approve = (examId) => client.patch(`/exams/${examId}/approve`);
+export const reject = (examId, reason) => client.patch(`/exams/${examId}/reject`, { reason });
 export const addQuestion = (examId, data) => client.post(`/exams/${examId}/questions`, data);
 export const listQuestions = (examId) => client.get(`/exams/${examId}/questions`);
 export const updateQuestion = (examId, questionId, data) =>

@@ -14,7 +14,6 @@ import Tabs from '../../components/ui/Tabs';
 import Modal from '../../components/ui/Modal';
 import StudentExams from '../../components/student/StudentExams';
 import StudentAssignments from '../../components/student/StudentAssignments';
-import StudentDiscussions from '../../components/student/StudentDiscussions';
 import CourseDiscussionSidebar from '../../components/course/CourseDiscussionSidebar';
 import ReactPlayer from 'react-player';
 const Player = ReactPlayer.default ? ReactPlayer.default : ReactPlayer;
@@ -284,8 +283,7 @@ export default function CoursePlayer() {
           tabs={[
             { key: 'lessons', label: 'Lessons' },
             { key: 'assignments', label: 'Assignments' },
-            { key: 'exams', label: 'Exams' },
-            { key: 'discussions', label: 'Discussions' }
+            { key: 'exams', label: 'Exams' }
           ]} 
           active={activeTab} 
           onChange={setActiveTab} 
@@ -506,10 +504,7 @@ export default function CoursePlayer() {
               </div>
             )}
 
-            <div className="row" style={{ justifyContent: 'space-between', marginTop: 'var(--sp-6)', paddingBottom: 'var(--sp-6)', borderBottom: '1px solid var(--border-subtle)' }}>
-              <span className="row text-muted" style={{ fontSize: 'var(--fs-xs)' }}>
-                <MessageSquare size={14} /> Have a question? Ask in the course discussion board.
-              </span>
+            <div className="row" style={{ justifyContent: 'flex-end', marginTop: 'var(--sp-6)', paddingBottom: 'var(--sp-6)', borderBottom: '1px solid var(--border-subtle)' }}>
               <Button
                 icon={CheckCircle2}
                 onClick={markComplete}
@@ -521,10 +516,7 @@ export default function CoursePlayer() {
               </Button>
             </div>
 
-            {/* Lesson Specific Q&A */}
-            <div style={{ marginTop: 'var(--sp-8)' }}>
-              <StudentDiscussions courseId={courseId} lessonId={activeLesson._id || activeLesson.id} />
-            </div>
+
           </div>
         )}
       </main>
@@ -533,25 +525,35 @@ export default function CoursePlayer() {
           <main className="player__content" style={{ overflowY: 'auto', background: 'var(--color-paper-50)' }}>
             {activeTab === 'assignments' && <StudentAssignments courseId={courseId} />}
             {activeTab === 'exams' && <StudentExams courseId={courseId} />}
-            {activeTab === 'discussions' && <StudentDiscussions courseId={courseId} />}
           </main>
         )}
       </div>
       
       <CourseDiscussionSidebar 
-        open={discussionSidebarOpen} 
+        isOpen={discussionSidebarOpen} 
         onClose={() => setDiscussionSidebarOpen(false)} 
         courseId={courseId} 
       />
 
-      <Modal open={!!previewContentUrl} onClose={() => setPreviewContentUrl(null)} title="View Attachment" width={800}>
-        <div style={{ height: '70vh', width: '100%' }}>
+      <Modal open={!!previewContentUrl} onClose={() => setPreviewContentUrl(null)} title="View Attachment" width={1200}>
+        <div style={{ position: 'relative', height: '75vh', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
           {previewContentUrl && (
-            <iframe 
-              src={buildStaticUrl(previewContentUrl)} 
-              title="Document Preview" 
-              style={{ width: '100%', height: '70vh', border: 'none', borderRadius: '8px', background: '#f8fafc' }}
-            />
+            previewContentUrl.match(/\.(jpe?g|png|gif|svg)$/i) ? (
+              <>
+                {iframeLoading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><PageLoader /></div>}
+                <img src={buildStaticUrl(previewContentUrl)} alt="Attachment" onLoad={() => setIframeLoading(false)} style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: iframeLoading ? 0 : 1 }} />
+              </>
+            ) : (
+              <>
+                {iframeLoading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><PageLoader /></div>}
+                <iframe
+                  src={buildStaticUrl(previewContentUrl)}
+                  title="Document Preview"
+                  onLoad={() => setIframeLoading(false)}
+                  style={{ width: '100%', height: '100%', border: 'none', background: '#f8fafc', opacity: iframeLoading ? 0 : 1 }}
+                />
+              </>
+            )
           )}
         </div>
       </Modal>
