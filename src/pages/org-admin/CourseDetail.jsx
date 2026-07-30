@@ -22,6 +22,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import PageLoader from '../../components/ui/PageLoader';
 import FileUploader from '../../components/ui/FileUploader';
+import VimeoUploader from '../../components/ui/VimeoUploader';
 import CourseDiscussionSidebar from '../../components/course/CourseDiscussionSidebar';
 
 const basePathFor = (pathname) => (pathname.startsWith('/faculty') ? '/faculty' : '/admin');
@@ -467,8 +468,20 @@ function ContentTab({ courseId, base, canManageContent }) {
               <option value="TEXT">Text</option>
             </Select>
           </Field>
-          <Field label="Video URL (YouTube/Vimeo)">
-            <Input value={lessonForm.videoUrl} onChange={(e) => setLessonForm((f) => ({ ...f, videoUrl: e.target.value }))} placeholder="https://..." />
+          <Field label="Video Source (Upload or URL)">
+            <div className="stack" style={{ gap: 8 }}>
+              <VimeoUploader 
+                onUploaded={(url) => setLessonForm((f) => ({ ...f, videoUrl: url }))} 
+                label="Upload to Vimeo"
+                videoName={lessonForm.title}
+              />
+              <div className="row" style={{ alignItems: 'center', gap: 8, margin: '4px 0' }}>
+                <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>OR PASTE LINK</span>
+                <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+              </div>
+              <Input value={lessonForm.videoUrl} onChange={(e) => setLessonForm((f) => ({ ...f, videoUrl: e.target.value }))} placeholder="https://youtube.com/... or https://vimeo.com/..." />
+            </div>
             {lessonForm.videoUrl && <div style={{ marginTop: 8, fontSize: 'var(--fs-xs)' }}><a href={lessonForm.videoUrl} target="_blank" rel="noreferrer">Test Video Link</a></div>}
           </Field>
           
