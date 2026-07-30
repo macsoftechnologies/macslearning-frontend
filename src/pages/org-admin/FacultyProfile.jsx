@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Clock, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, Users, ChevronDown, ChevronUp, PlayCircle, FileText, FileSignature } from 'lucide-react';
 import * as usersApi from '../../api/users';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { Card } from '../../components/ui/Card';
@@ -99,9 +99,15 @@ export default function FacultyProfile() {
                     <h3 style={{ fontSize: 'var(--fs-md)', fontWeight: 600, marginBottom: 'var(--sp-2)', color: isExpanded ? 'var(--color-primary-700)' : 'inherit' }}>
                       {course.title}
                     </h3>
-                    <div className="row text-muted" style={{ fontSize: 'var(--fs-xs)', gap: 'var(--sp-3)' }}>
+                    <div className="row text-muted" style={{ fontSize: 'var(--fs-xs)', gap: 'var(--sp-3)', marginBottom: 'var(--sp-2)' }}>
                       <span className="row"><Clock size={12} style={{ marginRight: 4 }} /> Created {new Date(course.createdAt).toLocaleDateString()}</span>
                       <StatusBadge status={course.status} />
+                    </div>
+                    
+                    <div className="row" style={{ gap: 'var(--sp-3)', fontSize: 'var(--fs-xs)' }}>
+                      <span className="row" style={{ color: 'var(--text-muted)' }}><PlayCircle size={14} style={{ marginRight: 4, color: '#3b82f6' }} /> {course.curriculum?.videos || 0} Videos</span>
+                      <span className="row" style={{ color: 'var(--text-muted)' }}><FileText size={14} style={{ marginRight: 4, color: '#f59e0b' }} /> {course.curriculum?.exams || 0} Exams</span>
+                      <span className="row" style={{ color: 'var(--text-muted)' }}><FileSignature size={14} style={{ marginRight: 4, color: '#10b981' }} /> {course.curriculum?.assignments || 0} Assignments</span>
                     </div>
                   </div>
                   

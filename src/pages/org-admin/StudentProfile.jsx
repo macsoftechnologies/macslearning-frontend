@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Clock, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, FileText, ChevronDown, ChevronUp, PlayCircle, FileSignature } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import * as studentsApi from '../../api/students';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -170,9 +170,9 @@ export default function StudentProfile() {
                       <div style={{ flex: 1, minWidth: 200 }}>
                         <h4 style={{ fontSize: 'var(--fs-md)', fontWeight: 600, marginBottom: 'var(--sp-2)' }}>Course Insights</h4>
                         <p style={{ color: 'var(--text-muted)', fontSize: 'var(--fs-sm)', marginBottom: 'var(--sp-4)' }}>
-                          This student has completed {progress}% of the required material. They have taken {courseExams.length} exams so far.
+                          This student has completed {progress}% of the required material.
                         </p>
-                        <div style={{ display: 'flex', gap: 'var(--sp-4)' }}>
+                        <div style={{ display: 'flex', gap: 'var(--sp-4)', marginBottom: 'var(--sp-4)' }}>
                           <div style={{ padding: 'var(--sp-3)', backgroundColor: 'white', borderRadius: 8, border: '1px solid var(--border)', flex: 1 }}>
                             <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>Highest Score</p>
                             <p style={{ fontSize: 'var(--fs-lg)', fontWeight: 600 }}>{Math.max(0, ...courseExams.map(e => e.score || 0))}</p>
@@ -182,6 +182,26 @@ export default function StudentProfile() {
                             <p style={{ fontSize: 'var(--fs-lg)', fontWeight: 600 }}>{courseExams.filter(e => e.isPassed).length}</p>
                           </div>
                         </div>
+                        
+                        {enrollment.curriculum && (
+                          <div>
+                            <h5 style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, marginBottom: 'var(--sp-2)' }}>Curriculum Breakdown</h5>
+                            <div className="stack" style={{ gap: 'var(--sp-2)' }}>
+                              <div className="row" style={{ justifyContent: 'space-between', fontSize: 'var(--fs-xs)' }}>
+                                <span className="row" style={{ color: 'var(--text-muted)' }}><PlayCircle size={14} style={{ marginRight: 6, color: '#3b82f6' }} /> Videos Watched</span>
+                                <span style={{ fontWeight: 600 }}>{enrollment.curriculum.videos.completed} / {enrollment.curriculum.videos.total}</span>
+                              </div>
+                              <div className="row" style={{ justifyContent: 'space-between', fontSize: 'var(--fs-xs)' }}>
+                                <span className="row" style={{ color: 'var(--text-muted)' }}><FileText size={14} style={{ marginRight: 6, color: '#f59e0b' }} /> Exams Attempted</span>
+                                <span style={{ fontWeight: 600 }}>{enrollment.curriculum.exams.completed} / {enrollment.curriculum.exams.total}</span>
+                              </div>
+                              <div className="row" style={{ justifyContent: 'space-between', fontSize: 'var(--fs-xs)' }}>
+                                <span className="row" style={{ color: 'var(--text-muted)' }}><FileSignature size={14} style={{ marginRight: 6, color: '#10b981' }} /> Assignments Submitted</span>
+                                <span style={{ fontWeight: 600 }}>{enrollment.curriculum.assignments.completed} / {enrollment.curriculum.assignments.total}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
