@@ -39,7 +39,7 @@ export default function VimeoUploader({ onUploaded, label = 'Upload Video', vide
         videoName: videoName || file.name,
       });
 
-      const { uploadLink, link } = res.data;
+      const { uploadLink, link } = res.data.data || res.data;
 
       // 2. Start tus upload directly to Vimeo
       const upload = new tus.Upload(file, {
