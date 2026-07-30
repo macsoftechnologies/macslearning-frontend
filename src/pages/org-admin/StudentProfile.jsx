@@ -38,7 +38,7 @@ export default function StudentProfile() {
         <div>
           <span className="page-eyebrow">Student Profile</span>
           <div className="row">
-            <h1 className="page-title">{profile.fullName || `${profile.firstName || ''} ${profile.lastName || ''}`.trim()}</h1>
+            <h1 className="page-title">{profile.fullName}</h1>
             <StatusBadge status={profile.status || 'ACTIVE'} />
           </div>
           <p className="page-subtitle">{profile.email}</p>
