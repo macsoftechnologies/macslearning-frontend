@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import * as usersApi from '../../api/users';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { Card } from '../../components/ui/Card';
@@ -11,7 +11,7 @@ export default function FacultyProfile() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('courses');
+  const [expandedCourseId, setExpandedCourseId] = useState(null);
 
   useEffect(() => {
     usersApi.getFacultyDetails(id)
@@ -27,6 +27,10 @@ export default function FacultyProfile() {
   if (!data || !data.profile) return <div className="page"><p>Faculty member not found.</p></div>;
 
   const { profile, courses, stats } = data;
+
+  const toggleCourse = (courseId) => {
+    setExpandedCourseId(prev => prev === courseId ? null : courseId);
+  };
 
   return (
     <div className="page">
@@ -64,30 +68,91 @@ export default function FacultyProfile() {
         </Card>
       </div>
 
-      <div className="tabs" style={{ display: 'flex', gap: 'var(--sp-4)', borderBottom: '1px solid var(--border)', marginBottom: 'var(--sp-5)' }}>
-        <button 
-          className={`tab-btn ${activeTab === 'courses' ? 'active' : ''}`}
-          style={{ padding: 'var(--sp-2) 0', borderBottom: activeTab === 'courses' ? '2px solid var(--color-primary-600)' : 'none', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: activeTab === 'courses' ? 'var(--color-primary-600)' : 'var(--text-muted)' }}
-          onClick={() => setActiveTab('courses')}
-        >
-          Courses & Students
-        </button>
-      </div>
+      <h2 style={{ fontSize: 'var(--fs-lg)', fontWeight: 600, marginBottom: 'var(--sp-5)' }}>Assigned Courses</h2>
 
-      {activeTab === 'courses' && (
-        <>
-          <p className="section-title">Assigned Courses</p>
-          <DataTable
-            columns={[
-              { key: 'title', header: 'Course Title' },
-              { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} /> },
-              { key: 'studentCount', header: 'Enrolled Students' },
-              { key: 'createdAt', header: 'Created', render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—' },
-            ]}
-            rows={courses || []}
-            emptyLabel="No courses assigned to this faculty member."
-          />
-        </>
+      {(!courses || courses.length === 0) ? (
+        <Card style={{ padding: 'var(--sp-8)', textAlign: 'center', color: 'var(--text-muted)' }}>
+          <BookOpen size={32} style={{ margin: '0 auto var(--sp-4)', opacity: 0.5 }} />
+          <p>No courses assigned to this faculty member.</p>
+        </Card>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--sp-5)', alignItems: 'start' }}>
+          {courses.map(course => {
+            const isExpanded = expandedCourseId === course.id;
+            const students = course.students || [];
+
+            return (
+              <Card 
+                key={course.id} 
+                style={{ 
+                  overflow: 'hidden', 
+                  gridColumn: isExpanded ? '1 / -1' : 'auto',
+                  transition: 'all 0.2s ease-in-out',
+                  border: isExpanded ? '2px solid var(--color-primary-500)' : '1px solid var(--border)',
+                  cursor: 'pointer'
+                }}
+                onClick={() => !isExpanded && toggleCourse(course.id)}
+              >
+                {/* CARD HEADER */}
+                <div style={{ padding: 'var(--sp-5)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h3 style={{ fontSize: 'var(--fs-md)', fontWeight: 600, marginBottom: 'var(--sp-2)', color: isExpanded ? 'var(--color-primary-700)' : 'inherit' }}>
+                      {course.title}
+                    </h3>
+                    <div className="row text-muted" style={{ fontSize: 'var(--fs-xs)', gap: 'var(--sp-3)' }}>
+                      <span className="row"><Clock size={12} style={{ marginRight: 4 }} /> Created {new Date(course.createdAt).toLocaleDateString()}</span>
+                      <StatusBadge status={course.status} />
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
+                    {!isExpanded && (
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{ fontSize: 'var(--fs-lg)', fontWeight: 700, color: 'var(--color-primary-600)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Users size={16} /> {course.studentCount}
+                        </p>
+                      </div>
+                    )}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); toggleCourse(course.id); }}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
+                    >
+                      {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* EXPANDED CONTENT: STUDENTS LIST */}
+                {isExpanded && (
+                  <div style={{ borderTop: '1px solid var(--border)', padding: 'var(--sp-5)', background: 'var(--bg-muted)' }}>
+                    <h4 style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, marginBottom: 'var(--sp-4)' }} className="row">
+                      <Users size={14} style={{ marginRight: 6 }} /> Enrolled Students ({students.length})
+                    </h4>
+                    
+                    {students.length > 0 ? (
+                      <DataTable
+                        columns={[
+                          { key: 'name', header: 'Student Name', render: (s) => (
+                            <Link to={`/admin/students/${s.id}`} style={{ fontWeight: 500, color: 'var(--color-primary-600)', textDecoration: 'none' }}>
+                              {s.fullName}
+                            </Link>
+                          )},
+                          { key: 'email', header: 'Email', render: (s) => s.email },
+                          { key: 'status', header: 'Status', render: (s) => <StatusBadge status={s.status} /> },
+                          { key: 'enrolledAt', header: 'Enrolled', render: (s) => s.enrolledAt ? new Date(s.enrolledAt).toLocaleDateString() : '—' },
+                        ]}
+                        rows={students}
+                        emptyLabel="No students enrolled in this course yet."
+                      />
+                    ) : (
+                      <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)' }}>No students enrolled in this course yet.</p>
+                    )}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );
