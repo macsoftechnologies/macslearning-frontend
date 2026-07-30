@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, FileText } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import * as studentsApi from '../../api/students';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { Card } from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
 import PageLoader from '../../components/ui/PageLoader';
 
+const PROGRESS_COLORS = ['var(--color-primary-600)', 'var(--border)'];
+const SCORE_COLORS = ['#10b981', '#ef4444', 'var(--border)']; // Green, Red, Gray
+
 export default function StudentProfile() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('enrollments');
 
   useEffect(() => {
     studentsApi.getStudentDetails(id)
@@ -54,62 +57,133 @@ export default function StudentProfile() {
           </div>
         </Card>
         <Card style={{ padding: 'var(--sp-5)' }}>
-          <p className="section-title">Summary Stats</p>
+          <p className="section-title">Academic Summary</p>
           <div className="stack" style={{ gap: 8 }}>
-            <Row label="Total Enrollments" value={stats.totalCourses} />
-            <Row label="Exams Attempted" value={stats.totalExamsAttempted} />
-            <Row label="Status" value={profile.status || 'ACTIVE'} />
+            <Row label="Enrolled Courses" value={stats.totalCourses} />
+            <Row label="Exams Taken" value={stats.totalExamsAttempted} />
+            <Row label="Account Status" value={profile.status || 'ACTIVE'} />
           </div>
         </Card>
       </div>
 
-      <div className="tabs" style={{ display: 'flex', gap: 'var(--sp-4)', borderBottom: '1px solid var(--border)', marginBottom: 'var(--sp-5)' }}>
-        <button 
-          className={`tab-btn ${activeTab === 'enrollments' ? 'active' : ''}`}
-          style={{ padding: 'var(--sp-2) 0', borderBottom: activeTab === 'enrollments' ? '2px solid var(--color-primary-600)' : 'none', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: activeTab === 'enrollments' ? 'var(--color-primary-600)' : 'var(--text-muted)' }}
-          onClick={() => setActiveTab('enrollments')}
-        >
-          Enrollments
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'exams' ? 'active' : ''}`}
-          style={{ padding: 'var(--sp-2) 0', borderBottom: activeTab === 'exams' ? '2px solid var(--color-primary-600)' : 'none', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, color: activeTab === 'exams' ? 'var(--color-primary-600)' : 'var(--text-muted)' }}
-          onClick={() => setActiveTab('exams')}
-        >
-          Exam Results
-        </button>
-      </div>
+      <h2 style={{ fontSize: 'var(--fs-lg)', fontWeight: 600, marginBottom: 'var(--sp-5)' }}>Course Performance</h2>
 
-      {activeTab === 'enrollments' && (
-        <>
-          <p className="section-title">Enrollments</p>
-          <DataTable
-            columns={[
-              { key: 'course', header: 'Course', render: (r) => r.course?.title || r.courseTitle || '—' },
-              { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} /> },
-              { key: 'progress', header: 'Progress', render: (r) => `${r.progressPercentage ?? 0}%` },
-              { key: 'enrolledAt', header: 'Enrolled On', render: (r) => (r.enrolledAt || r.createdAt ? new Date(r.enrolledAt || r.createdAt).toLocaleDateString() : '—') },
-            ]}
-            rows={enrollments || []}
-            emptyLabel="No enrollments."
-          />
-        </>
-      )}
+      {(!enrollments || enrollments.length === 0) ? (
+        <Card style={{ padding: 'var(--sp-8)', textAlign: 'center', color: 'var(--text-muted)' }}>
+          <BookOpen size={32} style={{ margin: '0 auto var(--sp-4)', opacity: 0.5 }} />
+          <p>No courses enrolled yet.</p>
+        </Card>
+      ) : (
+        <div className="stack" style={{ gap: 'var(--sp-6)' }}>
+          {enrollments.map(enrollment => {
+            const courseExams = (examResults || []).filter(e => e.exam?.courseId === enrollment.courseId);
+            const progress = enrollment.progressPercentage || 0;
+            const progressData = [
+              { name: 'Completed', value: progress },
+              { name: 'Remaining', value: 100 - progress }
+            ];
 
-      {activeTab === 'exams' && (
-        <>
-          <p className="section-title">Exam Results</p>
-          <DataTable
-            columns={[
-              { key: 'exam', header: 'Exam', render: (r) => r.exam?.title || '—' },
-              { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} /> },
-              { key: 'score', header: 'Score', render: (r) => r.score !== undefined && r.score !== null ? `${r.score} / ${r.exam?.totalMarks || 100}` : '—' },
-              { key: 'submitted', header: 'Submitted', render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—' },
-            ]}
-            rows={examResults || []}
-            emptyLabel="No exams attempted."
-          />
-        </>
+            return (
+              <Card key={enrollment.id} style={{ overflow: 'hidden' }}>
+                <div style={{ padding: 'var(--sp-5)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--sp-5)' }}>
+                  <div>
+                    <h3 style={{ fontSize: 'var(--fs-md)', fontWeight: 600, marginBottom: 'var(--sp-2)' }}>
+                      {enrollment.courseTitle || enrollment.course?.title || 'Unknown Course'}
+                    </h3>
+                    <div className="row text-muted" style={{ fontSize: 'var(--fs-xs)', gap: 'var(--sp-4)' }}>
+                      <span className="row"><Clock size={14} style={{ marginRight: 4 }} /> Enrolled: {new Date(enrollment.createdAt).toLocaleDateString()}</span>
+                      <StatusBadge status={enrollment.status} />
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>Course Progress</p>
+                      <p style={{ fontSize: 'var(--fs-lg)', fontWeight: 700, color: 'var(--color-primary-700)' }}>{progress}%</p>
+                    </div>
+                    <div style={{ width: 60, height: 60 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={progressData}
+                            innerRadius={20}
+                            outerRadius={28}
+                            paddingAngle={2}
+                            dataKey="value"
+                            stroke="none"
+                          >
+                            {progressData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={PROGRESS_COLORS[index]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => `${value}%`} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ padding: 'var(--sp-5)', background: 'var(--bg-muted)' }}>
+                  <h4 style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, marginBottom: 'var(--sp-4)' }} className="row">
+                    <FileText size={14} style={{ marginRight: 6 }} /> Exam Attempts for this Course
+                  </h4>
+                  {courseExams.length > 0 ? (
+                    <DataTable
+                      columns={[
+                        { key: 'exam', header: 'Exam Name', render: (r) => (
+                          <div>
+                            <span style={{ fontWeight: 500 }}>{r.exam?.title || '—'}</span>
+                            {r.exam?.isFinalExam && <StatusBadge status="FINAL" style={{ marginLeft: 8 }} />}
+                          </div>
+                        )},
+                        { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+                        { key: 'score', header: 'Score', render: (r) => {
+                          const max = r.exam?.totalMarks || 100;
+                          const score = r.score ?? 0;
+                          const pass = r.isPassed;
+                          const chartData = [
+                            { name: 'Score', value: score },
+                            { name: 'Lost', value: Math.max(0, max - score) }
+                          ];
+                          return (
+                            <div className="row" style={{ gap: 'var(--sp-3)' }}>
+                              <span style={{ fontWeight: 600, color: pass ? '#10b981' : (r.status === 'SUBMITTED' ? '#ef4444' : 'inherit') }}>
+                                {r.status === 'SUBMITTED' ? `${score}/${max}` : '—'}
+                              </span>
+                              {r.status === 'SUBMITTED' && (
+                                <div style={{ width: 24, height: 24 }}>
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                      <Pie
+                                        data={chartData}
+                                        innerRadius={8}
+                                        outerRadius={12}
+                                        dataKey="value"
+                                        stroke="none"
+                                      >
+                                        <Cell fill={pass ? SCORE_COLORS[0] : SCORE_COLORS[1]} />
+                                        <Cell fill={SCORE_COLORS[2]} />
+                                      </Pie>
+                                    </PieChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        }},
+                        { key: 'submitted', header: 'Submitted', render: (r) => r.status === 'SUBMITTED' && r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—' },
+                      ]}
+                      rows={courseExams}
+                      emptyLabel="No exams attempted."
+                    />
+                  ) : (
+                    <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)' }}>No exams attempted for this course yet.</p>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );
@@ -123,3 +197,4 @@ function Row({ label, value }) {
     </div>
   );
 }
+
