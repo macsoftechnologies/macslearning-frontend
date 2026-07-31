@@ -161,7 +161,7 @@ export default function CourseDetail() {
         onChange={setTab}
       />
 
-      {tab === 'content' && <ContentTab courseId={id} base={base} canManageContent={canManageContent} />}
+      {tab === 'content' && <ContentTab courseId={id} base={base} canManageContent={canManageContent} courseTitle={course.title} />}
       {tab === 'students' && <StudentsTab courseId={id} />}
       {tab === 'assignments' && <AssignmentsTab courseId={id} base={base} />}
       {tab === 'exams' && <ExamsTab courseId={id} base={base} canManageContent={canManageContent} />}
@@ -218,7 +218,7 @@ export default function CourseDetail() {
 
 /* ---------------------------- Content Tab ---------------------------- */
 
-function ContentTab({ courseId, base, canManageContent }) {
+function ContentTab({ courseId, base, canManageContent, courseTitle }) {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({});
@@ -473,7 +473,7 @@ function ContentTab({ courseId, base, canManageContent }) {
               <VimeoUploader 
                 onUploaded={(url) => setLessonForm((f) => ({ ...f, videoUrl: url }))} 
                 label="Upload to Vimeo"
-                videoName={lessonForm.title}
+                videoName={lessonForm.title ? `${courseTitle} - ${lessonForm.title}` : courseTitle}
               />
             </div>
             {lessonForm.videoUrl && <div style={{ marginTop: 8, fontSize: 'var(--fs-xs)' }}><a href={lessonForm.videoUrl} target="_blank" rel="noreferrer">Test Video Link</a></div>}
